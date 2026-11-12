@@ -1,0 +1,56 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Environment variables — NEVER commit this
+.env
+
+# Media files (user uploads)
+media/
+
+# ML models (large binary files)
+ml_models/*.pkl
+ml_models/*.h5
+ml_models/*.pt
+ml_models/*.pth
+ml_models/*.joblib
+
+# Dataset files
+datasets/
+
+# Virtual environment
+venv/
+env/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Static collected
+staticfiles/
+static_collected/
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Distribution
+dist/
+build/
+*.egg-info/

@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% block title %}How It Works{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-10" data-aos="fade-up">
+      <div class="section-badge mb-3"><i class="bi bi-diagram-3"></i> System Architecture</div>
+      <h2 class="text-white mb-4">How the Pipeline Operates</h2>
+
+      <div class="card-glass p-4 p-md-5 mb-5">
+        <p class="text-secondary leading-relaxed mb-4">
+          Heart sound auscultation captures soundwaves produced by the mechanical opening and closure of cardiac valves (primarily mitral, tricuspid, aortic, and pulmonary) along with turbulent blood acceleration. Here is how our computational pipeline converts raw acoustic recordings into auditable clinical screening indicators.
+        </p>
+
+        <div class="row g-4 mt-2">
+          
+          <div class="col-md-6">
+            <div class="p-4 rounded-3 h-100" style="background: rgba(0,212,255,0.03); border: 1px solid var(--border-color);">
+              <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="step-number" style="width: 38px; height: 38px; font-size: 0.95rem;">1</div>
+                <h5 class="text-white mb-0">Audio Ingestion & Validation</h5>
+              </div>
+              <p class="text-secondary small">
+                Files uploaded in WAV, FLAC, MP3, or AIFF format (or captured via the browser Web Audio API) are validated with <code>soundfile</code>. The pipeline enforces minimum durations (1.0s) and checks for corrupted headers or silent files.
+              </p>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="p-4 rounded-3 h-100" style="background: rgba(0,212,255,0.03); border: 1px solid var(--border-color);">
+              <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="step-number" style="width: 38px; height: 38px; font-size: 0.95rem;">2</div>
+                <h5 class="text-white mb-0">Preprocessing & Normalization</h5>
+              </div>
+              <p class="text-secondary small">
+                Signals are converted to single-channel mono, resampled with high-fidelity interpolation to 22.05 kHz, zero-padded or trimmed to a standardized 5.0s window, and normalized to unit peak amplitude to prevent loudness bias.
+              </p>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="p-4 rounded-3 h-100" style="background: rgba(0,212,255,0.03); border: 1px solid var(--border-color);">
+              <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="step-number" style="width: 38px; height: 38px; font-size: 0.95rem;">3</div>
+                <h5 class="text-white mb-0">Feature Extraction Engine</h5>
+              </div>
+              <p class="text-secondary small">
+                Using <code>librosa</code>, we compute 40 Mel-Frequency Cepstral Coefficients (mean and standard deviation vectors = 80 features), 12 Chroma features, 7 Spectral Contrast bands, Spectral Centroid and Bandwidth, Zero Crossing Rate, and Mel energies.
+              </p>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="p-4 rounded-3 h-100" style="background: rgba(0,212,255,0.03); border: 1px solid var(--border-color);">
+              <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="step-number" style="width: 38px; height: 38px; font-size: 0.95rem;">4</div>
+                <h5 class="text-white mb-0">ML Inference & Scaler Transform</h5>
+              </div>
+              <p class="text-secondary small">
+                The concatenated feature vector is transformed via a fitted <code>StandardScaler</code> and evaluated with an ensemble <code>RandomForestClassifier</code>. The model outputs class probabilities (Normal vs. Abnormal) and records confidence metrics.
+              </p>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="p-4 rounded-3 h-100" style="background: rgba(0,212,255,0.03); border: 1px solid var(--border-color);">
+              <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="step-number" style="width: 38px; height: 38px; font-size: 0.95rem;">5</div>
+                <h5 class="text-white mb-0">Spectral & Waveform Visuals</h5>
+              </div>
+              <p class="text-secondary small">
+                Matplotlib renders headless base64 spectrogram and time-domain waveform visual plots directly into the database record for visual verification of murmur intervals and valve clicks.
+              </p>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="p-4 rounded-3 h-100" style="background: rgba(0,212,255,0.03); border: 1px solid var(--border-color);">
+              <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="step-number" style="width: 38px; height: 38px; font-size: 0.95rem;">6</div>
+                <h5 class="text-white mb-0">PDF Reporting & Auditing</h5>
+              </div>
+              <p class="text-secondary small">
+                A formal clinical screening document is generated on demand via <code>ReportLab</code>, incorporating metadata, processing duration, probability distribution, and statutory medical disclaimers.
+              </p>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

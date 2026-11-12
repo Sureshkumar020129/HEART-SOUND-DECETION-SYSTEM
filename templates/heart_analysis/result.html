@@ -1,0 +1,214 @@
+{% extends 'base.html' %}
+{% block title %}Analysis Result{% endblock %}
+{% block content %}
+<div class="container py-5">
+
+  <!-- Header -->
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-3 mb-4" data-aos="fade-up">
+    <div>
+      <h2 class="text-white mb-1"><i class="bi bi-activity me-2 text-cyan"></i>Analysis Result</h2>
+      <p class="text-secondary small mb-0">ID: {{ analysis.id }} &middot; {{ analysis.created_at|date:"M d, Y H:i" }} UTC</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+      <a href="{% url 'heart_analysis:history' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-clock-history me-2"></i>History
+      </a>
+      {% if analysis.status == 'completed' or analysis.status == 'model_unavailable' %}
+      <a href="{% url 'reports:download' analysis.id %}" class="btn btn-outline-cyan">
+        <i class="bi bi-file-earmark-pdf me-2"></i>Download PDF
+      </a>
+      {% endif %}
+      <a href="{% url 'heart_analysis:upload' %}" class="btn btn-primary-glow">
+        <i class="bi bi-plus me-2"></i>New Analysis
+      </a>
+    </div>
+  </div>
+
+  {% if analysis.status == 'processing' or analysis.status == 'queued' %}
+  <!-- Processing State -->
+  <div class="card-glass p-5 text-center" data-aos="fade-up">
+    <div class="processing-indicator mx-auto">
+      <div class="pulse-ring" style="margin:0 auto 1rem;">
+        <div class="pulse-ring-inner"><i class="bi bi-cpu"></i></div>
+      </div>
+      <h4 class="text-white mt-3">Processing your heart sound...</h4>
+      <p class="text-secondary">Feature extraction and AI classification in progress.</p>
+      <div class="progress mt-3" style="height:6px;background:var(--border-color);">
+        <div class="progress-bar" style="background:var(--gradient-cyan);animation:progressAnim 2s ease-in-out infinite;width:70%;"></div>
+      </div>
+    </div>
+  </div>
+
+  {% else %}
+
+  <div class="row g-4">
+    <!-- Prediction Result Card -->
+    <div class="col-lg-5" data-aos="fade-right">
+      <div class="card-glass p-4">
+        <h5 class="text-white mb-4"><i class="bi bi-cpu me-2 text-cyan"></i>AI Classification</h5>
+
+        {% if model_unavailable %}
+        <div class="text-center py-4">
+          <i class="bi bi-exclamation-triangle-fill text-warning fs-1 mb-3 d-block"></i>
+          <h5 class="text-warning mb-2">Model Not Available</h5>
+          <p class="text-secondary small">The ML model files have not been configured. Please train and save a model first.</p>
+          <div class="info-box mt-3 text-start">
+            <p class="mb-1"><strong>To set up the model:</strong></p>
+            <code class="text-cyan small">python ml_pipeline/model_training.py --dataset_dir datasets/ --output_dir ml_models/</code>
+          </div>
+        </div>
+
+        {% elif prediction %}
+        <div class="text-center mb-4">
+          <div class="result-badge result-{{ prediction.classification }} mb-3">
+            {% if prediction.classification == 'normal' %}<i class="bi bi-check-circle-fill"></i>
+            {% elif prediction.classification == 'abnormal' %}<i class="bi bi-exclamation-triangle-fill"></i>
+            {% else %}<i class="bi bi-question-circle-fill"></i>{% endif %}
+            {{ prediction.classification|upper }}
+          </div>
+          {% if prediction.confidence_score %}
+          <div class="mb-3">
+            <div class="d-flex justify-content-between text-secondary small mb-1">
+              <span>Model Confidence</span>
+              <span>{{ prediction.confidence_score|floatformat:1 }}%</span>
+            </div>
+            <div class="confidence-bar">
+              <div class="confidence-fill" style="width:{{ prediction.confidence_score|floatformat:0 }}%;"></div>
+            </div>
+            <p class="text-muted mt-1" style="font-size:0.75rem;">
+              This is the model's classification confidence — not a medical probability.
+            </p>
+          </div>
+          {% endif %}
+        </div>
+
+        {% if prediction.raw_scores %}
+        <div class="mb-4">
+          <h6 class="text-secondary small mb-2">Class Probability Scores</h6>
+          {% for cls, score in prediction.raw_scores.items %}
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="text-secondary small">{{ cls|title }}</span>
+            <div class="d-flex align-items-center gap-2" style="width:65%">
+              <div class="confidence-bar flex-grow-1">
+                <div class="confidence-fill {% if cls == 'abnormal' %}bg-danger{% endif %}"
+                     style="width:{% widthratio score 1 100 %}%;{% if cls == 'abnormal' %}background:#ef4444;{% endif %}"></div>
+              </div>
+              <span class="text-secondary small" style="width:40px;text-align:right;">{{ score|floatformat:3 }}</span>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Model Info -->
+        <div class="mt-3 p-3 rounded-3" style="background:rgba(255,255,255,0.03);border:1px solid var(--border-color);">
+          <div class="text-secondary small">
+            <div class="d-flex justify-content-between mb-1">
+              <span>Model</span><span class="text-white">{{ prediction.model_name }}</span>
+            </div>
+            <div class="d-flex justify-content-between mb-1">
+              <span>Version</span><span class="text-white">{{ prediction.model_version }}</span>
+            </div>
+            <div class="d-flex justify-content-between">
+              <span>Analysed</span><span class="text-white">{{ prediction.created_at|date:"M d, Y H:i" }}</span>
+            </div>
+          </div>
+        </div>
+        {% else %}
+        <div class="text-center py-4 text-secondary">
+          <i class="bi bi-exclamation-circle fs-1 mb-3 d-block"></i>
+          <p>Analysis failed: {{ analysis.error_message|truncatechars:200 }}</p>
+        </div>
+        {% endif %}
+
+        <!-- Next Steps by classification -->
+        {% if prediction and prediction.classification == 'abnormal' %}
+        <div class="disclaimer-box mt-3">
+          <strong><i class="bi bi-exclamation-triangle me-1"></i>Important:</strong>
+          An 'Abnormal' classification means the model detected patterns that differ from typical normal heart sounds.
+          This does NOT confirm heart disease. <strong>Please consult a cardiologist</strong> for proper evaluation.
+        </div>
+        {% elif prediction and prediction.classification == 'normal' %}
+        <div class="info-box mt-3">
+          <i class="bi bi-info-circle me-1"></i>
+          A 'Normal' classification does NOT rule out heart disease. Regular check-ups with a healthcare provider are still important.
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Visualizations -->
+    <div class="col-lg-7" data-aos="fade-left">
+      <!-- Recording Info -->
+      <div class="card-glass p-4 mb-4">
+        <h5 class="text-white mb-3"><i class="bi bi-file-earmark-music me-2 text-cyan"></i>Recording Details</h5>
+        <div class="row g-2 text-secondary small">
+          <div class="col-6"><span class="text-muted">File:</span><br><span class="text-white">{{ recording.original_filename|default:"Browser Recording" }}</span></div>
+          <div class="col-6"><span class="text-muted">Source:</span><br><span class="text-white">{{ recording.get_source_display }}</span></div>
+          <div class="col-6"><span class="text-muted">Duration:</span><br><span class="text-white">{% if recording.duration_seconds %}{{ recording.duration_seconds|floatformat:2 }}s{% else %}N/A{% endif %}</span></div>
+          <div class="col-6"><span class="text-muted">Sample Rate:</span><br><span class="text-white">{% if recording.sample_rate %}{{ recording.sample_rate }} Hz{% else %}N/A{% endif %}</span></div>
+          <div class="col-6"><span class="text-muted">File Size:</span><br><span class="text-white">{{ recording.file_size_bytes|filesizeformat }}</span></div>
+          <div class="col-6"><span class="text-muted">Processing:</span><br><span class="text-white">{% if analysis.processing_duration_ms %}{{ analysis.processing_duration_ms }}ms{% else %}N/A{% endif %}</span></div>
+        </div>
+      </div>
+
+      <!-- Waveform -->
+      {% if waveform_url %}
+      <div class="card-glass p-4 mb-4">
+        <h6 class="text-white mb-3"><i class="bi bi-soundwave me-2 text-cyan"></i>Heart Sound Waveform</h6>
+        <img src="{{ waveform_url }}" alt="Heart Sound Waveform" class="analysis-image">
+        <p class="text-muted mt-2" style="font-size:0.75rem;">Amplitude vs. time for the processed recording (5-second window, normalized).</p>
+      </div>
+      {% endif %}
+
+      <!-- Spectrogram -->
+      {% if spectrogram_url %}
+      <div class="card-glass p-4">
+        <h6 class="text-white mb-3"><i class="bi bi-grid me-2 text-cyan"></i>Mel Spectrogram</h6>
+        <img src="{{ spectrogram_url }}" alt="Mel Spectrogram" class="analysis-image">
+        <p class="text-muted mt-2" style="font-size:0.75rem;">Mel-frequency energy distribution. Brighter regions indicate higher energy at that frequency and time.</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Full Disclaimer -->
+  {% if prediction %}
+  <div class="disclaimer-box mt-4" data-aos="fade-up">
+    <strong><i class="bi bi-exclamation-triangle me-2"></i>Medical Disclaimer:</strong>
+    {{ prediction.disclaimer }}
+  </div>
+  {% endif %}
+
+  <!-- Action Buttons -->
+  <div class="mt-4 d-flex flex-wrap gap-3" data-aos="fade-up">
+    {% if analysis.status == 'completed' or analysis.status == 'model_unavailable' %}
+    <a href="{% url 'reports:download' analysis.id %}" class="btn btn-primary-glow">
+      <i class="bi bi-file-earmark-pdf me-2"></i>Download PDF Report
+    </a>
+    {% endif %}
+    <a href="{% url 'chatbot:chatbot' %}" class="btn btn-outline-cyan">
+      <i class="bi bi-robot me-2"></i>Ask HeartCare AI
+    </a>
+    <a href="{% url 'assessments:assessment' %}" class="btn btn-outline-secondary">
+      <i class="bi bi-clipboard-heart me-2"></i>Health Assessment
+    </a>
+    <form method="post" action="{% url 'heart_analysis:delete_recording' recording.pk %}" class="d-inline"
+          onsubmit="return confirm('Delete this recording and analysis? This cannot be undone.');">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-outline-danger">
+        <i class="bi bi-trash me-2"></i>Delete
+      </button>
+    </form>
+  </div>
+  {% endif %}
+</div>
+
+<style>
+@keyframes progressAnim {
+  0% { width: 20%; }
+  50% { width: 80%; }
+  100% { width: 20%; }
+}
+</style>
+{% endblock %}

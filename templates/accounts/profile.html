@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% block title %}Profile{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="row g-4">
+    <div class="col-lg-4">
+      <div class="card-glass p-4 text-center" data-aos="fade-right">
+        <div class="mb-3">
+          {% if profile.avatar %}
+          <img src="{{ profile.avatar.url }}" alt="Avatar" class="rounded-circle mb-3" width="96" height="96" style="object-fit:cover;border:3px solid var(--accent-cyan);">
+          {% else %}
+          <div class="mx-auto mb-3 d-flex align-items-center justify-content-center rounded-circle"
+               style="width:96px;height:96px;background:var(--gradient-brand);font-size:2rem;font-weight:800;color:white;">
+            {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+          </div>
+          {% endif %}
+          <h4 class="text-white mb-1">{{ user.get_full_name|default:user.username }}</h4>
+          <p class="text-secondary small">{{ user.email }}</p>
+          <p class="text-muted small">Member since {{ user.date_joined|date:"M Y" }}</p>
+        </div>
+        <hr class="border-secondary">
+        <div class="d-grid gap-2 mt-3">
+          <div class="d-flex justify-content-between text-secondary small py-2">
+            <span><i class="bi bi-soundwave me-2"></i>Total Analyses</span>
+            <strong class="text-cyan">{{ analysis_count }}</strong>
+          </div>
+          <div class="d-flex justify-content-between text-secondary small py-2">
+            <span><i class="bi bi-clipboard-heart me-2"></i>Assessments</span>
+            <strong class="text-cyan">{{ assessment_count }}</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-8" data-aos="fade-left">
+      <div class="card-glass p-4">
+        <h4 class="text-white mb-4"><i class="bi bi-person-gear me-2 text-cyan"></i>Edit Profile</h4>
+        <form method="post" enctype="multipart/form-data" novalidate>
+          {% csrf_token %}
+          <div class="row g-3">
+            <div class="col-sm-6">
+              <label class="form-label">First Name</label>
+              <input type="text" name="first_name" value="{{ user.first_name }}" class="form-control">
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label">Last Name</label>
+              <input type="text" name="last_name" value="{{ user.last_name }}" class="form-control">
+            </div>
+            <div class="col-12">
+              <label class="form-label">Email Address</label>
+              {{ form.email }}
+              {% if form.email.errors %}<div class="text-danger small mt-1">{{ form.email.errors|join:", " }}</div>{% endif %}
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label">Phone</label>
+              {{ form.phone }}
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label">Date of Birth</label>
+              {{ form.date_of_birth }}
+            </div>
+            <div class="col-12">
+              <label class="form-label">Bio</label>
+              {{ form.bio }}
+            </div>
+            <div class="col-12">
+              <label class="form-label">Profile Photo</label>
+              {{ form.avatar }}
+            </div>
+            <div class="col-12">
+              <div class="form-check">
+                {{ form.email_notifications }}
+                <label class="form-check-label text-secondary">Receive email notifications</label>
+              </div>
+            </div>
+          </div>
+          <div class="mt-4 d-flex gap-3">
+            <button type="submit" class="btn btn-primary-glow"><i class="bi bi-check me-2"></i>Save Changes</button>
+            <a href="{% url 'accounts:password_reset' %}" class="btn btn-outline-secondary">Change Password</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

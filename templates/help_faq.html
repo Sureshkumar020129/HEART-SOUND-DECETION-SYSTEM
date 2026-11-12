@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% block title %}Help & FAQ{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-10" data-aos="fade-up">
+      <div class="section-badge mb-3"><i class="bi bi-question-circle"></i> Frequently Asked Questions</div>
+      <h2 class="text-white mb-4">Help & User Guide</h2>
+
+      <div class="accordion accordion-flush" id="faqAccordion">
+
+        <div class="accordion-item card-glass mb-3 border-0 rounded-3 overflow-hidden">
+          <h2 class="accordion-header">
+            <button class="accordion-button bg-transparent text-white collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+              How do I record or upload my heart sound?
+            </button>
+          </h2>
+          <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+            <div class="accordion-body text-secondary">
+              Navigate to <strong>Analysis &rarr; Upload / Record</strong>. You can drag and drop an existing audio recording (in WAV, FLAC, MP3, or OGG format) or switch to the <em>Record Audio</em> tab to use your laptop or smartphone microphone. For best results, place the microphone directly over the bare left chest area in a quiet room for 5–10 seconds.
+            </div>
+          </div>
+        </div>
+
+        <div class="accordion-item card-glass mb-3 border-0 rounded-3 overflow-hidden">
+          <h2 class="accordion-header">
+            <button class="accordion-button bg-transparent text-white collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+              What does an "Abnormal" classification result mean?
+            </button>
+          </h2>
+          <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+            <div class="accordion-body text-secondary">
+              An <em>Abnormal</em> output indicates that the acoustic frequency and temporal features extracted from your recording contain patterns statistically closer to murmur or pathological sound samples in the training dataset than healthy baseline recordings. <strong>This does not prove you have heart disease</strong>, nor does it identify a specific valve condition. It is a screening prompt to seek standard clinical auscultation with a physician.
+            </div>
+          </div>
+        </div>
+
+        <div class="accordion-item card-glass mb-3 border-0 rounded-3 overflow-hidden">
+          <h2 class="accordion-header">
+            <button class="accordion-button bg-transparent text-white collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+              Why does my analysis report state "Model Not Available"?
+            </button>
+          </h2>
+          <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+            <div class="accordion-body text-secondary">
+              Our system strictly prohibits hardcoding or generating fake prediction outputs. If the trained model file (<code>ml_models/heart_sound_classifier.pkl</code>) has not yet been placed or generated via <code>python ml_pipeline/model_training.py</code>, the system safely records the audio and generates visual spectrograms while honestly stating that the ML inference engine is awaiting model configuration.
+            </div>
+          </div>
+        </div>
+
+        <div class="accordion-item card-glass mb-3 border-0 rounded-3 overflow-hidden">
+          <h2 class="accordion-header">
+            <button class="accordion-button bg-transparent text-white collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
+              Can I delete my uploaded recordings?
+            </button>
+          </h2>
+          <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+            <div class="accordion-body text-secondary">
+              Yes. You retain total ownership of your files. From the <strong>Analysis History</strong> or individual analysis view, clicking the red <em>Delete</em> button permanently wipes the audio file from the server storage and purges the corresponding database record.
+            </div>
+          </div>
+        </div>
+
+        <div class="accordion-item card-glass mb-3 border-0 rounded-3 overflow-hidden">
+          <h2 class="accordion-header">
+            <button class="accordion-button bg-transparent text-white collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#faq5">
+              How does the HeartCare AI Assistant work?
+            </button>
+          </h2>
+          <div id="faq5" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+            <div class="accordion-body text-secondary">
+              The assistant runs server-side with support for OpenAI GPT, Google Gemini, and Anthropic Claude APIs when configured in your <code>.env</code> file. When no API credentials are supplied, it seamlessly falls back to an internal medical education knowledge-base and FAQ engine. In either mode, safety filters proactively identify emergency indicators and advise contacting emergency services immediately.
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="card-glass p-4 text-center mt-5">
+        <h5 class="text-white mb-2">Have a question not addressed here?</h5>
+        <p class="text-secondary small mb-3">Ask HeartCare AI Assistant or review our medical terms and disclaimers.</p>
+        <div class="d-flex justify-content-center gap-3">
+          <a href="{% url 'chatbot:chatbot' %}" class="btn btn-primary-glow btn-sm"><i class="bi bi-robot me-1"></i>Ask Chatbot</a>
+          <a href="{% url 'core:terms' %}" class="btn btn-outline-cyan btn-sm"><i class="bi bi-file-text me-1"></i>Medical Disclaimer</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

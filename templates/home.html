@@ -1,0 +1,227 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Home{% endblock %}
+{% block content %}
+
+<!-- Hero Section -->
+<section class="hero-section">
+  <div class="hero-bg-anim">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <!-- Heartbeat Line (decorative) -->
+    <div class="heartbeat-line">
+      <svg viewBox="0 0 1200 80" preserveAspectRatio="none">
+        <polyline class="heartbeat-path"
+          points="0,40 100,40 150,40 180,10 210,70 240,10 270,70 300,40 350,40 450,40 480,20 510,60 540,40 600,40 700,40 750,5 780,75 810,5 840,75 870,40 920,40 1200,40"
+          stroke="#00d4ff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+  </div>
+
+  <div class="container position-relative">
+    <div class="row align-items-center min-vh-100 py-5">
+      <div class="col-lg-6" data-aos="fade-right">
+        <div class="section-badge mb-4">
+          <i class="bi bi-activity"></i>
+          AI-Powered Medical Research Tool
+        </div>
+        <h1 class="hero-title text-white mb-4">
+          Heart Sound<br>
+          <span class="gradient-text">Disease Detection</span><br>
+          Powered by AI
+        </h1>
+        <p class="hero-subtitle mb-5">
+          Upload your heart sound recording and let our machine learning model analyse
+          it for normal or abnormal patterns. A research and educational screening tool —
+          not a clinical diagnostic device.
+        </p>
+        <div class="d-flex flex-wrap gap-3 mb-4">
+          {% if user.is_authenticated %}
+          <a href="{% url 'heart_analysis:upload' %}" class="btn btn-primary-glow btn-lg">
+            <i class="bi bi-soundwave me-2"></i>Analyse Heart Sound
+          </a>
+          <a href="{% url 'dashboard:dashboard' %}" class="btn btn-outline-cyan btn-lg">
+            <i class="bi bi-grid me-2"></i>Dashboard
+          </a>
+          {% else %}
+          <a href="{% url 'accounts:register' %}" class="btn btn-primary-glow btn-lg">
+            <i class="bi bi-person-plus me-2"></i>Get Started Free
+          </a>
+          <a href="{% url 'core:how_it_works' %}" class="btn btn-outline-cyan btn-lg">
+            <i class="bi bi-play-circle me-2"></i>How It Works
+          </a>
+          {% endif %}
+        </div>
+        <!-- Animated waveform (illustrative — NOT live data) -->
+        <div class="d-flex align-items-center gap-3 mt-2">
+          <div class="waveform-anim">
+            {% for i in "1234567890" %}<div class="waveform-bar"></div>{% endfor %}
+          </div>
+          <span class="text-muted small">Illustrative heart sound waveform</span>
+        </div>
+      </div>
+
+      <div class="col-lg-6 d-none d-lg-flex justify-content-center" data-aos="fade-left" data-aos-delay="200">
+        <div class="hero-graphic">
+          <div class="card-glass p-4 rounded-4" style="max-width:420px;width:100%">
+            <!-- Mock analysis card (illustrative, NOT real data) -->
+            <div class="d-flex align-items-center gap-3 mb-4">
+              <div class="feature-icon-wrap" style="background:rgba(0,212,255,0.1);">
+                <i class="bi bi-heart-pulse text-cyan fs-4"></i>
+              </div>
+              <div>
+                <div class="fw-bold text-white">HeartCare Analysis</div>
+                <div class="text-muted small">Illustrative demo — not real data</div>
+              </div>
+            </div>
+            <div class="mb-3">
+              <div class="text-muted small mb-2">Sample waveform visualization</div>
+              <div style="background:#0a1628;border-radius:8px;padding:12px;">
+                <svg viewBox="0 0 300 60" width="100%">
+                  <polyline points="0,30 20,30 35,10 50,50 65,10 80,50 95,30 115,30 135,30 155,15 170,45 185,30 220,30 240,20 255,40 270,30 300,30"
+                    stroke="#00d4ff" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+            </div>
+            <div class="d-flex gap-2">
+              <div class="flex-1 p-3 rounded-3" style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);">
+                <div class="text-success fw-bold">Normal</div>
+                <div class="text-muted small">Example output</div>
+              </div>
+              <div class="flex-1 p-3 rounded-3" style="background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.2);">
+                <div class="text-cyan fw-bold">78%</div>
+                <div class="text-muted small">Confidence</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5" style="background:var(--bg-secondary);">
+  <div class="container py-4">
+    <div class="text-center mb-5" data-aos="fade-up">
+      <div class="section-badge mb-3"><i class="bi bi-stars"></i> Key Features</div>
+      <h2 class="section-title text-white">Everything You Need</h2>
+      <p class="text-secondary">A complete heart sound analysis platform for research and education.</p>
+    </div>
+
+    <div class="row g-4">
+      {% with features='' %}
+      <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="0">
+        <div class="feature-card">
+          <div class="feature-icon-wrap" style="background:rgba(0,212,255,0.1);">
+            <i class="bi bi-upload text-cyan"></i>
+          </div>
+          <h5 class="text-white mb-2">Upload or Record</h5>
+          <p class="text-secondary">Upload WAV/FLAC/MP3 files or record directly from your browser microphone with real-time preview.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="100">
+        <div class="feature-card">
+          <div class="feature-icon-wrap" style="background:rgba(124,58,237,0.1);">
+            <i class="bi bi-cpu text-purple" style="color:var(--accent-purple)!important"></i>
+          </div>
+          <h5 class="text-white mb-2">AI Classification</h5>
+          <p class="text-secondary">Machine learning model extracts MFCCs, spectral features, and classifies heart sounds as normal or abnormal.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="200">
+        <div class="feature-card">
+          <div class="feature-icon-wrap" style="background:rgba(16,185,129,0.1);">
+            <i class="bi bi-graph-up text-success"></i>
+          </div>
+          <h5 class="text-white mb-2">Visual Analysis</h5>
+          <p class="text-secondary">View waveform and mel-spectrogram visualizations of your heart sound recording.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="300">
+        <div class="feature-card">
+          <div class="feature-icon-wrap" style="background:rgba(245,158,11,0.1);">
+            <i class="bi bi-file-earmark-pdf text-warning"></i>
+          </div>
+          <h5 class="text-white mb-2">PDF Reports</h5>
+          <p class="text-secondary">Download detailed PDF analysis reports with model results, disclaimers, and next-step guidance.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="400">
+        <div class="feature-card">
+          <div class="feature-icon-wrap" style="background:rgba(239,68,68,0.1);">
+            <i class="bi bi-clipboard-heart text-danger"></i>
+          </div>
+          <h5 class="text-white mb-2">Health Assessment</h5>
+          <p class="text-secondary">Complete a symptom questionnaire to get a simple risk indicator and guidance on when to seek care.</p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="500">
+        <div class="feature-card">
+          <div class="feature-icon-wrap" style="background:rgba(0,212,255,0.1);">
+            <i class="bi bi-robot text-cyan"></i>
+          </div>
+          <h5 class="text-white mb-2">AI Chatbot</h5>
+          <p class="text-secondary">HeartCare AI Assistant answers your questions about heart sounds, results, and healthy habits — 24/7.</p>
+        </div>
+      </div>
+      {% endwith %}
+    </div>
+  </div>
+</section>
+
+<!-- How It Works (brief) -->
+<section class="py-5">
+  <div class="container py-4">
+    <div class="text-center mb-5" data-aos="fade-up">
+      <div class="section-badge mb-3"><i class="bi bi-diagram-3"></i> Process</div>
+      <h2 class="section-title text-white">How It Works</h2>
+    </div>
+    <div class="row g-4 align-items-start">
+      {% for step in '1234'|make_list %}
+      <div class="col-sm-6 col-lg-3" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:'0' }}00">
+        <div class="text-center">
+          <div class="step-number mx-auto mb-3">{{ forloop.counter }}</div>
+          {% if forloop.counter == 1 %}
+          <h6 class="text-white mb-2">Create Account</h6>
+          <p class="text-secondary small">Register securely and consent to data processing for research purposes.</p>
+          {% elif forloop.counter == 2 %}
+          <h6 class="text-white mb-2">Upload Audio</h6>
+          <p class="text-secondary small">Upload a WAV/FLAC recording or use your browser microphone.</p>
+          {% elif forloop.counter == 3 %}
+          <h6 class="text-white mb-2">AI Analysis</h6>
+          <p class="text-secondary small">Our pipeline extracts features and runs the ML classifier.</p>
+          {% else %}
+          <h6 class="text-white mb-2">View Results</h6>
+          <p class="text-secondary small">See the classification, confidence, visuals, and download your PDF report.</p>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="text-center mt-5" data-aos="fade-up">
+      <a href="{% url 'core:how_it_works' %}" class="btn btn-outline-cyan">
+        <i class="bi bi-arrow-right me-2"></i>Full Details
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+{% if not user.is_authenticated %}
+<section class="py-5">
+  <div class="container py-3 text-center" data-aos="fade-up">
+    <h2 class="section-title text-white mb-3">Ready to Explore?</h2>
+    <p class="text-secondary mb-4">Create a free account to upload heart sounds and explore our research tools.</p>
+    <a href="{% url 'accounts:register' %}" class="btn btn-primary-glow btn-lg me-3">
+      <i class="bi bi-person-plus me-2"></i>Register Now
+    </a>
+    <a href="{% url 'accounts:login' %}" class="btn btn-outline-cyan btn-lg">
+      <i class="bi bi-box-arrow-in-right me-2"></i>Login
+    </a>
+  </div>
+</section>
+{% endif %}
+
+{% endblock %}

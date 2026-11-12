@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% block title %}Heart Health Assessment{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8" data-aos="fade-up">
+      <div class="mb-4">
+        <h2 class="text-white"><i class="bi bi-clipboard-heart me-2 text-cyan"></i>Heart Health Symptom Questionnaire</h2>
+        <p class="text-secondary">Answer the questions below to evaluate reported symptoms. This assessment provides risk indicators and triage guidance, not a medical diagnosis.</p>
+      </div>
+
+      <div class="disclaimer-box mb-4">
+        <i class="bi bi-exclamation-triangle-fill me-2 text-danger"></i>
+        <strong>Emergency Notice:</strong> If you are currently experiencing crushing chest pain, sudden numbness, severe difficulty breathing, or collapse, stop this questionnaire and call emergency services immediately (911/999/112).
+      </div>
+
+      <div class="card-glass p-4 p-md-5">
+        <form method="post" novalidate>
+          {% csrf_token %}
+
+          <h5 class="text-cyan mb-3"><i class="bi bi-person me-2"></i>1. Demographics & Profile</h5>
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <label class="form-label">Age (Years)</label>
+              {{ form.age }}
+              {% if form.age.errors %}<div class="text-danger small">{{ form.age.errors|join:", " }}</div>{% endif %}
+            </div>
+          </div>
+
+          <hr class="border-secondary my-4">
+
+          <h5 class="text-cyan mb-3"><i class="bi bi-heart-pulse me-2"></i>2. Cardiac & Respiratory Symptoms</h5>
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <label class="form-label">Chest Discomfort / Tightness</label>
+              {{ form.chest_discomfort }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Chest Discomfort Severity (0-10 Scale)</label>
+              {{ form.chest_pain_level }}
+              <div class="form-text text-muted small">0 = None, 10 = Worst imaginable</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Shortness of Breath on Exertion</label>
+              {{ form.shortness_of_breath }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Shortness of Breath at Rest / Lying Flat</label>
+              {{ form.shortness_at_rest }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Dizziness or Lightheadedness</label>
+              {{ form.dizziness }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Unexplained Fainting (Syncope)</label>
+              {{ form.fainting }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Unusual Fatigue / Weakness</label>
+              {{ form.fatigue }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Heart Palpitations / Rapid Fluttering</label>
+              {{ form.palpitations }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Swelling in Ankles or Legs (Edema)</label>
+              {{ form.swollen_ankles }}
+            </div>
+          </div>
+
+          <hr class="border-secondary my-4">
+
+          <h5 class="text-cyan mb-3"><i class="bi bi-shield-check me-2"></i>3. Risk Factors & Medical History</h5>
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <label class="form-label">Tobacco Smoker / Vaping</label>
+              {{ form.smoker }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">History of Diabetes</label>
+              {{ form.diabetes }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">High Blood Pressure (Hypertension)</label>
+              {{ form.high_blood_pressure }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Family History of Early Heart Disease</label>
+              {{ form.family_heart_history }}
+            </div>
+            <div class="col-12">
+              <label class="form-label">Additional Observations or Notes</label>
+              {{ form.additional_notes }}
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary-glow btn-lg w-100">
+            <i class="bi bi-check-circle me-2"></i>Submit Health Assessment
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

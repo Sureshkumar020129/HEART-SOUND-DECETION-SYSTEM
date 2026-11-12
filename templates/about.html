@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block title %}About the Project{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-10" data-aos="fade-up">
+      <div class="section-badge mb-3"><i class="bi bi-info-circle"></i> Project Background</div>
+      <h2 class="text-white mb-4">About HeartSound AI</h2>
+      
+      <div class="card-glass p-4 p-md-5 mb-4">
+        <h4 class="text-cyan mb-3">Project Overview</h4>
+        <p class="text-secondary leading-relaxed">
+          Cardiovascular disease (CVD) represents one of the leading causes of global mortality. While early clinical auscultation with a stethoscope is foundational, acoustic interpretation requires extensive clinical training, and subtle murmurs or diastolic anomalies can often be overlooked in early outpatient screenings.
+        </p>
+        <p class="text-secondary leading-relaxed">
+          <strong>HeartSound AI</strong> is a full-stack automated screening support and research application. By marrying digital phonocardiogram (PCG) acoustic processing, feature extraction (MFCCs, spectral contrast, chroma, mel-energies), and machine learning classification (Random Forest with class-balanced weighting), the system facilitates rapid preliminary triage and patient education.
+        </p>
+
+        <h4 class="text-cyan mt-5 mb-3">Core Research Objectives</h4>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <div class="p-3 rounded-3" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color);">
+              <h6 class="text-white"><i class="bi bi-check2-circle text-teal me-2"></i>Signal Preprocessing Rigor</h6>
+              <p class="text-secondary small mb-0">Consistent resampling to 22.05 kHz, mono downmixing, zero-padding/truncation to fixed time windows, and peak amplitude normalization.</p>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="p-3 rounded-3" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color);">
+              <h6 class="text-white"><i class="bi bi-check2-circle text-teal me-2"></i>Multi-Domain Audio Features</h6>
+              <p class="text-secondary small mb-0">Integration of 40-order MFCC statistics, spectral centroid, spectral bandwidth, zero-crossing rates, and mel-filterbank energies.</p>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="p-3 rounded-3" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color);">
+              <h6 class="text-white"><i class="bi bi-check2-circle text-teal me-2"></i>Transparent AI Model Tiering</h6>
+              <p class="text-secondary small mb-0">Clear distinction between algorithmic model confidence probabilities and clinical disease likelihood, preventing overconfidence.</p>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="p-3 rounded-3" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color);">
+              <h6 class="text-white"><i class="bi bi-check2-circle text-teal me-2"></i>Fail-Safe Interactive Chatbot</h6>
+              <p class="text-secondary small mb-0">Configurable multi-provider LLM backend with emergency keyword detection that triggers immediate urgent triage instructions.</p>
+            </div>
+          </div>
+        </div>
+
+        <h4 class="text-cyan mt-5 mb-3">Academic & Research Standards</h4>
+        <p class="text-secondary leading-relaxed">
+          The machine learning pipeline is designed around datasets such as the <strong>PhysioNet / Computing in Cardiology Challenge 2016 Heart Sound Database</strong>. Data is partitioned with strict stratification and patient-level boundaries to prevent data leakage between training, validation, and test splits.
+        </p>
+
+        <div class="disclaimer-box mt-4">
+          <i class="bi bi-shield-exclamation me-2 text-danger"></i>
+          <strong>Institutional Medical Notice:</strong> HeartSound AI is engineered exclusively for academic, engineering demonstration, and research exploration. It does not possess CE mark or FDA clearance as a diagnostic medical device.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

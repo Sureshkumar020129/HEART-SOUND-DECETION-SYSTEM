@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% block title %}HeartCare AI Assistant{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-10 col-xl-9">
+      
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="d-flex align-items-center gap-3">
+          <div class="stat-icon" style="background: rgba(0, 212, 255, 0.1);">
+            <i class="bi bi-robot text-cyan fs-4"></i>
+          </div>
+          <div>
+            <h4 class="text-white mb-0">HeartCare AI Assistant</h4>
+            <span class="text-muted small">
+              {% if ai_provider %}
+                Powered by {{ ai_provider|title }} &middot; Connected
+              {% else %}
+                Rule-Based Guidance Mode (Configure AI Provider in .env)
+              {% endif %}
+            </span>
+          </div>
+        </div>
+        <button id="clearChatBtn" class="btn btn-outline-secondary btn-sm">
+          <i class="bi bi-trash3 me-1"></i>Clear Chat
+        </button>
+      </div>
+
+      <div class="card-glass p-0 overflow-hidden chat-container">
+        
+        <!-- Messages Area -->
+        <div class="chat-messages" id="chatMessages">
+          <!-- Initial Welcome message -->
+          <div class="message-bubble assistant-msg">
+            <div class="bubble-content">
+              Hello {{ user.first_name|default:user.username }}! I am <strong>HeartCare AI Assistant</strong>, your interactive guide for heart sound disease detection and cardiovascular wellness education.
+              <br><br>
+              How can I assist you today? You can select a quick prompt below or type your question.
+            </div>
+            <div class="message-time text-end">Just now</div>
+          </div>
+
+          {% for msg in messages %}
+          <div class="message-bubble {% if msg.role == 'user' %}user-msg{% else %}assistant-msg{% endif %}">
+            <div class="bubble-content">
+              {{ msg.content|linebreaksbr }}
+            </div>
+            {% if msg.source == 'fallback' and msg.role == 'assistant' %}
+            <div class="fallback-badge"><i class="bi bi-info-circle"></i> Rule-based response</div>
+            {% endif %}
+            <div class="message-time text-end">{{ msg.timestamp|date:"H:i" }}</div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <!-- Suggested Prompts -->
+        <div class="px-3 py-2 border-top border-secondary border-opacity-25 bg-dark bg-opacity-50">
+          <div class="d-flex gap-2 overflow-auto py-1" style="scrollbar-width: none;">
+            {% for prompt in suggested_prompts %}
+            <button type="button" class="prompt-chip" data-prompt="{{ prompt }}">{{ prompt }}</button>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="chat-input-area">
+          <form id="chatForm" class="chat-input-wrap">
+            {% csrf_token %}
+            <textarea id="chatInput" class="chat-input" rows="1" placeholder="Ask about heart sounds, analysis reports, or application guidance..." required></textarea>
+            <button type="submit" id="sendBtn" class="chat-send-btn" title="Send message">
+              <i class="bi bi-send-fill"></i>
+            </button>
+          </form>
+          <div class="d-flex justify-content-between align-items-center mt-2 px-1">
+            <span class="text-muted" style="font-size: 0.72rem;">
+              <i class="bi bi-shield-lock me-1"></i>Educational guidance only. Not diagnostic or prescription advice.
+            </span>
+            <span class="text-muted" style="font-size: 0.72rem;">Press Enter to send</span>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

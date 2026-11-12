@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+{% block title %}Upload Heart Sound{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="mb-4" data-aos="fade-up">
+        <h2 class="text-white"><i class="bi bi-upload me-2 text-cyan"></i>Upload Heart Sound</h2>
+        <p class="text-secondary">Upload a recording or use your browser microphone. Supported: WAV, FLAC, MP3, OGG, AIFF (max 50 MB).</p>
+      </div>
+
+      <!-- Tab Navigation -->
+      <ul class="nav nav-pills mb-4" data-aos="fade-up">
+        <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#uploadTab">
+          <i class="bi bi-upload me-2"></i>Upload File</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#recordTab">
+          <i class="bi bi-mic me-2"></i>Record Audio</button></li>
+      </ul>
+
+      <div class="tab-content">
+        <!-- Upload Tab -->
+        <div class="tab-pane fade show active" id="uploadTab">
+          <div class="card-glass p-4" data-aos="fade-up">
+            <form method="post" enctype="multipart/form-data" id="uploadForm">
+              {% csrf_token %}
+              <!-- Drop Zone -->
+              <div class="upload-zone mb-4" id="uploadZone">
+                <i class="bi bi-cloud-upload upload-icon"></i>
+                <h5 class="text-white mb-2">Drag & Drop or Click to Browse</h5>
+                <p class="text-secondary small mb-3">WAV · FLAC · MP3 · OGG · AIFF — Max 50 MB</p>
+                {{ form.audio_file }}
+              </div>
+
+              <!-- File selected preview -->
+              <div id="filePreviewArea" class="d-none mb-4">
+                <div class="card-glass p-3">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-white fw-medium"><i class="bi bi-file-earmark-music me-2 text-cyan"></i>
+                      <span id="selectedFileName">—</span>
+                    </span>
+                    <span class="text-secondary small" id="selectedFileSize">—</span>
+                  </div>
+                  <div>
+                    <label class="form-label text-secondary small mb-1">Preview</label>
+                    <audio id="audioPreview" controls class="w-100" style="border-radius:8px;"></audio>
+                  </div>
+                </div>
+              </div>
+
+              {% if form.audio_file.errors %}
+              <div class="alert alert-danger small">{{ form.audio_file.errors|join:", " }}</div>
+              {% endif %}
+
+              <button type="submit" class="btn btn-primary-glow btn-lg w-100" id="submitUploadBtn">
+                <i class="bi bi-cpu me-2"></i>Analyse Recording
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Record Tab -->
+        <div class="tab-pane fade" id="recordTab">
+          <div class="card-glass p-4" data-aos="fade-up">
+            {% csrf_token %}
+            <div class="text-center mb-4">
+              <div class="processing-indicator">
+                <div class="pulse-ring" id="recordingRing" style="display:none;">
+                  <div class="pulse-ring-inner"><i class="bi bi-mic"></i></div>
+                </div>
+                <div id="recordStatus" class="text-secondary">Press Record to start capturing audio.</div>
+                <div id="recordTimer" class="stat-number mt-1" style="font-size:1.5rem;">00:00</div>
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-center gap-3 mb-4">
+              <button class="btn btn-danger btn-lg" id="recordBtn">
+                <i class="bi bi-record-circle me-2"></i>Record
+              </button>
+              <button class="btn btn-outline-secondary btn-lg" id="stopBtn" disabled>
+                <i class="bi bi-stop-circle me-2"></i>Stop
+              </button>
+            </div>
+
+            <div class="d-none mb-4" id="recordPreviewArea">
+              <label class="form-label text-secondary small">Recording Preview</label>
+              <audio id="recordPreview" controls class="w-100" style="border-radius:8px;"></audio>
+            </div>
+
+            <div class="disclaimer-box mb-4">
+              <i class="bi bi-info-circle me-2"></i>
+              Your browser will request microphone permission. Recording stays on your device until you click Analyse.
+            </div>
+
+            <button class="btn btn-primary-glow btn-lg w-100" id="submitRecordBtn" disabled>
+              <i class="bi bi-send me-2"></i>Analyse Recording
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Format guide -->
+      <div class="card-glass p-4 mt-4" data-aos="fade-up">
+        <h6 class="text-white mb-3"><i class="bi bi-info-circle me-2 text-cyan"></i>Tips for Best Results</h6>
+        <ul class="text-secondary small mb-0">
+          <li>Record in a quiet environment to minimise background noise.</li>
+          <li>Use a good-quality stethoscope with a digital adapter, or place the microphone close to the chest.</li>
+          <li>Record at least 5–10 seconds of audio covering S1 and S2 heart sounds.</li>
+          <li>WAV format at 22 050 Hz or higher gives the best analysis quality.</li>
+          <li>This tool is for research/educational purposes — not clinical diagnosis.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const fileInput = document.getElementById('audioFileInput');
+  const previewArea = document.getElementById('filePreviewArea');
+  const submitBtn = document.getElementById('submitUploadBtn');
+  const recordRing = document.getElementById('recordingRing');
+  const recordBtn = document.getElementById('recordBtn');
+  const stopBtn = document.getElementById('stopBtn');
+  const submitRecordBtn = document.getElementById('submitRecordBtn');
+
+  // Show file preview area when file selected
+  if (fileInput) {
+    fileInput.addEventListener('change', function() {
+      if (this.files.length) {
+        previewArea.classList.remove('d-none');
+      }
+    });
+  }
+
+  // Show ring animation while recording
+  if (recordBtn) {
+    recordBtn.addEventListener('click', function() {
+      recordRing.style.display = 'block';
+      submitRecordBtn.disabled = true;
+    });
+  }
+  if (stopBtn) {
+    stopBtn.addEventListener('click', function() {
+      recordRing.style.display = 'none';
+      submitRecordBtn.disabled = false;
+    });
+  }
+
+  // Show upload spinner on submit
+  const uploadForm = document.getElementById('uploadForm');
+  if (uploadForm && submitBtn) {
+    uploadForm.addEventListener('submit', function() {
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Analysing...';
+    });
+  }
+});
+</script>
+{% endblock %}

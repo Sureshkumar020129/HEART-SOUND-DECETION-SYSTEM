@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block title %}Terms & Medical Disclaimer{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-10" data-aos="fade-up">
+      <div class="section-badge mb-3"><i class="bi bi-file-earmark-medical"></i> Legal Notice</div>
+      <h2 class="text-white mb-4">Terms of Use & Medical Disclaimer</h2>
+
+      <div class="card-glass p-4 p-md-5 leading-relaxed text-secondary">
+        
+        <div class="disclaimer-box mb-4">
+          <h5 class="text-danger fw-bold"><i class="bi bi-exclamation-triangle-fill me-2"></i>STATUTORY MEDICAL DISCLAIMER</h5>
+          <p class="mb-0">
+            THE HEARTSOUND AI SYSTEM IS PROVIDED AS-IS FOR SCIENTIFIC, ENGINEERING, RESEARCH, AND INFORMATIONAL EDUCATION PURPOSES ONLY. IT IS NOT INTENDED, LICENSED, OR CERTIFIED AS A CLINICAL MEDICAL DIAGNOSTIC DEVICE.
+          </p>
+        </div>
+
+        <h5 class="text-white mt-4 mb-3">1. No Medical Advice or Doctor-Patient Relationship</h5>
+        <p>
+          Information provided on this web application, including automated heart sound classifications (Normal, Abnormal), confidence ratings, symptom assessment risk scores, and messages from HeartCare AI Assistant, does not constitute professional medical advice, formal diagnosis, treatment prescription, or clinical auscultation.
+        </p>
+
+        <h5 class="text-white mt-4 mb-3">2. Limitations of Machine Learning Inference</h5>
+        <p>
+          Acoustic phonocardiogram classification depends entirely on recording environment, ambient noise, sensor positioning, microphone frequency response, and the inherent statistical limits of training datasets. A <em>"Normal"</em> result does NOT guarantee the absence of cardiac pathology, coronary disease, or valve defects. Conversely, an <em>"Abnormal"</em> result may be triggered by ambient artifact, breathing sounds, or benign innocent murmurs.
+        </p>
+
+        <h5 class="text-white mt-4 mb-3">3. Urgent Medical Emergency Procedure</h5>
+        <p>
+          If you, or someone in your care, experience chest discomfort, crushing pressure, radiating pain to the arm or jaw, shortness of breath, sudden lightheadedness, or fainting, <strong>immediately contact emergency response services (911 in USA, 999 in UK, 112 in Europe, or your local regional emergency center)</strong>. Do not delay medical consultation based on any result provided by this system.
+        </p>
+
+        <h5 class="text-white mt-4 mb-3">4. Acceptance of Terms</h5>
+        <p>
+          By creating an account, recording or uploading audio, or interacting with the chatbot, you explicitly acknowledge and agree to these terms, verifying that you utilize this platform as an educational and screening support aid only.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

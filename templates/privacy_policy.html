@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}Privacy Policy{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-10" data-aos="fade-up">
+      <div class="section-badge mb-3"><i class="bi bi-shield-lock"></i> Data Protection</div>
+      <h2 class="text-white mb-4">Privacy & Data Governance Policy</h2>
+
+      <div class="card-glass p-4 p-md-5 leading-relaxed text-secondary">
+        <h5 class="text-white mb-3">1. Scope and Principles</h5>
+        <p>HeartSound AI values your privacy. This policy explains how information is handled when using this research and screening-support application.</p>
+
+        <h5 class="text-white mt-4 mb-3">2. Audio Data & Storage Isolation</h5>
+        <p>Uploaded and microphone-recorded heart sounds are saved under segregated, randomized UUID directory paths inaccessible through open web directory browsing. Audio files are processed solely on the backend to generate feature vectors, waveforms, spectrograms, and classification scores.</p>
+        <p><strong>Audio files are NEVER transmitted to third-party language model providers or external data aggregators.</strong> Only sanitized text prompts within the AI Chatbot module are processed by configured LLMs.</p>
+
+        <h5 class="text-white mt-4 mb-3">3. Account & Demographic Data</h5>
+        <p>We store only essential authentication credentials (encrypted via Django's PBKDF2 with SHA-256 password hasher) and optional health assessment questionnaire responses associated with your user ID.</p>
+
+        <h5 class="text-white mt-4 mb-3">4. Right to Deletion (Data Retention)</h5>
+        <p>You maintain continuous control over your records. You can delete any individual heart sound recording and its associated waveform visuals and prediction results at any time via your user dashboard. Wiping an entry permanently removes the file from filesystem disk storage.</p>
+
+        <h5 class="text-white mt-4 mb-3">5. Audit Logging</h5>
+        <p>For system integrity, non-medical operational audit entries (such as login timestamps, account creation, and analysis job executions) are stored in administrative logs with stripped query content.</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

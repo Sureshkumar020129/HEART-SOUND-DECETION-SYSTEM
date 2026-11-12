@@ -1,0 +1,31 @@
+{
+  "model_name": "HeartSoundClassifier",
+  "version": "1.0.0",
+  "algorithm": "RandomForestClassifier",
+  "n_estimators": 200,
+  "feature_length": 190,
+  "training_samples": 24,
+  "test_samples": 6,
+  "test_f1_weighted": 1.0,
+  "cv_f1_mean": 1.0,
+  "cv_f1_std": 0.0,
+  "sensitivity": 1.0,
+  "specificity": 1.0,
+  "confusion_matrix": [
+    [
+      3,
+      0
+    ],
+    [
+      0,
+      3
+    ]
+  ],
+  "classes": [
+    "normal",
+    "abnormal"
+  ],
+  "sample_rate": 22050,
+  "audio_duration_seconds": 5,
+  "disclaimer": "Metrics are computed on a held-out test set split from the training dataset. Performance may differ on other datasets or clinical populations. This model is for research and educational purposes only."
+}

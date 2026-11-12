@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% block title %}Assessment Result{% endblock %}
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8" data-aos="fade-up">
+      <div class="card-glass p-4 p-md-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <div>
+            <h3 class="text-white mb-1"><i class="bi bi-file-earmark-medical me-2 text-cyan"></i>Assessment Summary</h3>
+            <span class="text-muted small">Completed on {{ assessment.submitted_at|date:"M d, Y H:i" }} UTC</span>
+          </div>
+          <span class="badge risk-{{ assessment.risk_level }} fs-6 px-3 py-2">
+            Risk Level: {{ assessment.get_risk_level_display }}
+          </span>
+        </div>
+
+        {% if assessment.risk_level == 'seek_urgent' %}
+        <div class="alert alert-danger d-flex align-items-start gap-3 p-4">
+          <i class="bi bi-exclamation-octagon-fill fs-2"></i>
+          <div>
+            <h5 class="alert-heading fw-bold">Immediate Medical Attention Recommended</h5>
+            <p class="mb-0">You reported symptoms such as severe chest pain, syncope (fainting), or resting shortness of breath. Please contact emergency services or proceed to the nearest emergency department immediately.</p>
+            <div class="d-flex flex-wrap gap-2 mt-3" aria-label="Call emergency services">
+              <a href="tel:911" class="btn btn-danger btn-sm">
+                <i class="bi bi-telephone-fill me-1" aria-hidden="true"></i>Call 911
+              </a>
+              <a href="tel:999" class="btn btn-danger btn-sm">
+                <i class="bi bi-telephone-fill me-1" aria-hidden="true"></i>Call 999
+              </a>
+              <a href="tel:112" class="btn btn-danger btn-sm">
+                <i class="bi bi-telephone-fill me-1" aria-hidden="true"></i>Call 112
+              </a>
+            </div>
+          </div>
+        </div>
+        {% elif assessment.risk_level == 'high' %}
+        <div class="alert alert-warning d-flex align-items-start gap-3 p-3">
+          <i class="bi bi-exclamation-triangle-fill fs-3"></i>
+          <div>
+            <h6 class="alert-heading fw-bold">Elevated Symptom Risk Score</h6>
+            <p class="mb-0">Multiple significant cardiovascular symptoms or risk factors were noted. We strongly recommend scheduling a clinical consultation with a physician or cardiologist promptly.</p>
+          </div>
+        </div>
+        {% elif assessment.risk_level == 'moderate' %}
+        <div class="alert alert-info d-flex align-items-start gap-3 p-3">
+          <i class="bi bi-info-circle-fill fs-3"></i>
+          <div>
+            <h6 class="alert-heading fw-bold">Moderate Symptom Indications</h6>
+            <p class="mb-0">Some mild or intermittent symptoms were reported. Discuss these findings with your primary healthcare provider at your next routine checkup.</p>
+          </div>
+        </div>
+        {% else %}
+        <div class="alert alert-success d-flex align-items-start gap-3 p-3">
+          <i class="bi bi-check-circle-fill fs-3"></i>
+          <div>
+            <h6 class="alert-heading fw-bold">Low Reported Symptom Burden</h6>
+            <p class="mb-0">Your answers suggest low acute cardiovascular symptoms. Continue heart-healthy habits and regular physical screenings.</p>
+          </div>
+        </div>
+        {% endif %}
+
+        <h5 class="text-white mt-4 mb-3">Reported Details</h5>
+        <div class="row g-3 text-secondary small">
+          <div class="col-md-6"><strong class="text-white">Age:</strong> {{ assessment.age|default:"Not specified" }}</div>
+          <div class="col-md-6"><strong class="text-white">Chest Discomfort:</strong> {{ assessment.get_chest_discomfort_display }} (Level {{ assessment.chest_pain_level }}/10)</div>
+          <div class="col-md-6"><strong class="text-white">Shortness of Breath:</strong> {{ assessment.get_shortness_of_breath_display }} (At rest: {{ assessment.get_shortness_at_rest_display }})</div>
+          <div class="col-md-6"><strong class="text-white">Dizziness / Fainting:</strong> {{ assessment.get_dizziness_display }} / {{ assessment.get_fainting_display }}</div>
+          <div class="col-md-6"><strong class="text-white">Palpitations:</strong> {{ assessment.get_palpitations_display }}</div>
+          <div class="col-md-6"><strong class="text-white">Swollen Ankles:</strong> {{ assessment.get_swollen_ankles_display }}</div>
+          <div class="col-md-6"><strong class="text-white">Tobacco Smoker:</strong> {{ assessment.get_smoker_display }}</div>
+          <div class="col-md-6"><strong class="text-white">Diabetes / Hypertension:</strong> {{ assessment.get_diabetes_display }} / {{ assessment.get_high_blood_pressure_display }}</div>
+        </div>
+
+        {% if assessment.additional_notes %}
+        <div class="mt-4 p-3 rounded-3" style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color);">
+          <strong class="text-white small">Notes:</strong>
+          <p class="text-secondary small mb-0">{{ assessment.additional_notes }}</p>
+        </div>
+        {% endif %}
+
+        <hr class="border-secondary my-4">
+
+        <div class="d-flex flex-wrap gap-3">
+          <a href="{% url 'assessments:history' %}" class="btn btn-outline-cyan">
+            <i class="bi bi-clock-history me-2"></i>Assessment History
+          </a>
+          <a href="{% url 'heart_analysis:upload' %}" class="btn btn-primary-glow">
+            <i class="bi bi-soundwave me-2"></i>Run Heart Sound Analysis
+          </a>
+          <a href="{% url 'chatbot:chatbot' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-robot me-2"></i>Discuss with AI Chatbot
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

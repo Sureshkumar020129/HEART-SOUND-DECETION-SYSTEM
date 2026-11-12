@@ -1,0 +1,220 @@
+{% extends 'admin_portal/base_admin.html' %}
+
+{% block title %}Analysis {{ analysis.id }}{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+  <div>
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb small mb-1">
+        <li class="breadcrumb-item"><a href="{% url 'admin_portal:analysis_list' %}" class="text-decoration-none">Analyses</a></li>
+        <li class="breadcrumb-item active">{{ analysis.id }}</li>
+      </ol>
+    </nav>
+    <div class="d-flex align-items-center gap-2">
+      <h3 class="fw-bold mb-0">Analysis Details</h3>
+      {% if analysis.status == 'completed' %}
+        <span class="badge bg-success">Completed</span>
+      {% elif analysis.status == 'failed' or analysis.status == 'model_unavailable' %}
+        <span class="badge bg-danger">Failed</span>
+      {% else %}
+        <span class="badge bg-warning">{{ analysis.status }}</span>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="d-flex gap-2">
+    {% if analysis.status == 'completed' %}
+    <a href="{% url 'reports:download' analysis.id %}" class="btn btn-sm btn-primary">
+      <i class="bi bi-file-pdf me-1"></i> Download PDF Report
+    </a>
+    {% endif %}
+
+    <!-- Retry failed job -->
+    {% if analysis.status != 'completed' %}
+    <form method="post" action="{% url 'admin_portal:analysis_retry' analysis.id %}" onsubmit="return confirm('Re-run feature extraction and ML inference pipeline for this recording?');">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-sm btn-outline-warning">
+        <i class="bi bi-arrow-repeat me-1"></i> Reprocess / Retry Job
+      </button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+
+<div class="row g-4 mb-4">
+  <!-- Left Column: Result & Model Metadata -->
+  <div class="col-lg-5">
+    <!-- Classification Card -->
+    <div class="card border-0 bg-card p-4 shadow-sm mb-4">
+      <h6 class="fw-bold text-muted text-uppercase small mb-3">Model Inference Result</h6>
+      {% if prediction %}
+        <div class="p-3 rounded mb-3 text-center {% if prediction.classification == 'normal' %}bg-success bg-opacity-15 border border-success border-opacity-25{% elif prediction.classification == 'abnormal' %}bg-danger bg-opacity-15 border border-danger border-opacity-25{% else %}bg-secondary bg-opacity-15 border border-secondary border-opacity-25{% endif %}">
+          <span class="text-muted small text-uppercase fw-semibold d-block">Predicted Classification</span>
+          <h2 class="fw-bold my-1 {% if prediction.classification == 'normal' %}text-success{% elif prediction.classification == 'abnormal' %}text-danger{% else %}text-light{% endif %}">
+            {{ prediction.classification|upper }}
+          </h2>
+          {% if prediction.confidence_score is not None %}
+          <div class="mt-2">
+            <span class="badge bg-dark border border-secondary border-opacity-25 px-3 py-1">
+              Confidence Probability: <strong>{{ prediction.confidence_score|floatformat:3 }}</strong>
+            </span>
+          </div>
+          {% endif %}
+        </div>
+
+        {% if prediction.raw_scores %}
+        <div class="mb-3">
+          <span class="small text-muted fw-semibold">Class Probability Vector:</span>
+          <div class="mt-1">
+            {% for cls, score in prediction.raw_scores.items %}
+            <div class="d-flex justify-content-between small py-1 border-bottom border-secondary border-opacity-25">
+              <span class="text-muted">P({{ cls }}):</span>
+              <span class="fw-semibold">{{ score|floatformat:4 }}</span>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        <div class="small text-muted mt-3 pt-3 border-top border-secondary border-opacity-25">
+          <div>Model Name: <strong>{{ prediction.model_name }}</strong></div>
+          <div>Version: <strong>{{ prediction.model_version }}</strong></div>
+          <div>Processed: <strong>{{ analysis.processing_duration_ms|default:"N/A" }} ms</strong></div>
+        </div>
+      {% else %}
+        <div class="alert alert-secondary py-3 small mb-0">
+          No prediction record found for this analysis. Status is <strong>{{ analysis.status }}</strong>.
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Processing Error Review (if any) -->
+    {% if analysis.error_message %}
+    <div class="card border-0 bg-card p-4 shadow-sm mb-4 border-danger border-start border-4">
+      <h6 class="fw-bold text-danger mb-2"><i class="bi bi-exclamation-triangle-fill me-2"></i>Processing Failure Log</h6>
+      <pre class="bg-dark p-3 rounded text-danger small mb-0 overflow-auto" style="max-height: 180px;">{{ analysis.error_message }}</pre>
+    </div>
+    {% endif %}
+
+    <!-- Associated User & File Metadata -->
+    <div class="card border-0 bg-card p-4 shadow-sm">
+      <h6 class="fw-bold text-muted text-uppercase small mb-3">Recording Metadata</h6>
+      <ul class="list-unstyled small mb-0">
+        <li class="py-1 d-flex justify-content-between border-bottom border-secondary border-opacity-25">
+          <span class="text-muted">User:</span>
+          <a href="{% url 'admin_portal:user_detail' analysis.user.id %}" class="fw-bold text-info text-decoration-none">{{ analysis.user.username }}</a>
+        </li>
+        <li class="py-1 d-flex justify-content-between border-bottom border-secondary border-opacity-25">
+          <span class="text-muted">Original File:</span>
+          <span>{{ recording.original_filename|default:"Browser Recording" }}</span>
+        </li>
+        <li class="py-1 d-flex justify-content-between border-bottom border-secondary border-opacity-25">
+          <span class="text-muted">Audio Source:</span>
+          <span class="text-capitalize">{{ recording.source }}</span>
+        </li>
+        <li class="py-1 d-flex justify-content-between border-bottom border-secondary border-opacity-25">
+          <span class="text-muted">File Size:</span>
+          <span>{{ recording.file_size_bytes|filesizeformat }}</span>
+        </li>
+        <li class="py-1 d-flex justify-content-between border-bottom border-secondary border-opacity-25">
+          <span class="text-muted">Duration:</span>
+          <span>{{ recording.duration_seconds|floatformat:2 }} seconds</span>
+        </li>
+        <li class="py-1 d-flex justify-content-between border-bottom border-secondary border-opacity-25">
+          <span class="text-muted">Sample Rate:</span>
+          <span>{{ recording.sample_rate|default:"22050" }} Hz</span>
+        </li>
+        <li class="py-1 d-flex justify-content-between">
+          <span class="text-muted">Submitted At:</span>
+          <span>{{ analysis.created_at|date:"Y-m-d H:i:s" }}</span>
+        </li>
+      </ul>
+
+      <!-- Secure Audio Player (explicit authorization) -->
+      <div class="mt-4 pt-3 border-top border-secondary border-opacity-25">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <span class="small fw-semibold text-muted"><i class="bi bi-file-earmark-music me-1 text-info"></i>Audio Playback</span>
+          <span class="badge bg-secondary bg-opacity-25" style="font-size: 0.65rem;">Admin Access</span>
+        </div>
+        {% if recording.audio_file %}
+        <audio controls class="w-100" style="height: 36px;">
+          <source src="{{ recording.audio_file.url }}">
+          Your browser does not support audio playback.
+        </audio>
+        {% else %}
+        <small class="text-muted">Audio file not found on storage.</small>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Column: Visualizations & Feature Vector -->
+  <div class="col-lg-7">
+    <!-- Waveform Visualizer -->
+    <div class="card border-0 bg-card p-4 shadow-sm mb-4">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h6 class="fw-bold mb-0"><i class="bi bi-soundwave me-2 text-primary"></i>Acoustic Waveform Plot</h6>
+        <span class="badge bg-secondary bg-opacity-25 text-muted">Time-Domain Signal</span>
+      </div>
+      {% if analysis.waveform_image %}
+      <img src="{{ analysis.waveform_image.url }}" alt="Waveform Plot" class="img-fluid rounded border border-secondary border-opacity-25">
+      {% else %}
+      <div class="py-5 text-center text-muted">
+        <i class="bi bi-image fs-1 d-block mb-2 text-secondary"></i>
+        Waveform visualization has not been generated for this analysis.
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Spectrogram Visualizer -->
+    <div class="card border-0 bg-card p-4 shadow-sm mb-4">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h6 class="fw-bold mb-0"><i class="bi bi-activity me-2 text-info"></i>Mel-Spectrogram (Frequency-Domain)</h6>
+        <span class="badge bg-secondary bg-opacity-25 text-muted">22.05 kHz Mel Bands</span>
+      </div>
+      {% if analysis.spectrogram_image %}
+      <img src="{{ analysis.spectrogram_image.url }}" alt="Mel Spectrogram" class="img-fluid rounded border border-secondary border-opacity-25">
+      {% else %}
+      <div class="py-5 text-center text-muted">
+        <i class="bi bi-image fs-1 d-block mb-2 text-secondary"></i>
+        Spectrogram plot has not been generated for this analysis.
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Feature Vector Summary -->
+    {% if prediction.feature_summary %}
+    <div class="card border-0 bg-card p-4 shadow-sm">
+      <h6 class="fw-bold text-muted text-uppercase small mb-3">Feature Extraction Statistics (Audit Verification)</h6>
+      <div class="row g-2 small">
+        <div class="col-6 col-md-3">
+          <div class="p-2 bg-dark rounded border border-secondary border-opacity-25 text-center">
+            <span class="text-muted d-block" style="font-size: 0.75rem;">Vector Length</span>
+            <strong>{{ prediction.feature_summary.feature_length }}</strong>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="p-2 bg-dark rounded border border-secondary border-opacity-25 text-center">
+            <span class="text-muted d-block" style="font-size: 0.75rem;">Mean</span>
+            <strong>{{ prediction.feature_summary.mean|floatformat:3 }}</strong>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="p-2 bg-dark rounded border border-secondary border-opacity-25 text-center">
+            <span class="text-muted d-block" style="font-size: 0.75rem;">Std Dev</span>
+            <strong>{{ prediction.feature_summary.std|floatformat:3 }}</strong>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="p-2 bg-dark rounded border border-secondary border-opacity-25 text-center">
+            <span class="text-muted d-block" style="font-size: 0.75rem;">Max / Min</span>
+            <strong>{{ prediction.feature_summary.max|floatformat:1 }} / {{ prediction.feature_summary.min|floatformat:1 }}</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -46,6 +46,21 @@ class CustomLoginForm(AuthenticationForm):
         self.fields['username'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Username'})
         self.fields['password'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Password'})
 
+    def confirm_login_allowed(self, user):
+        super().confirm_login_allowed(user)
+        if hasattr(user, 'profile'):
+            if user.profile.status == 'suspended':
+                reason = user.profile.suspension_reason or 'Contact the administrator for assistance.'
+                raise forms.ValidationError(
+                    f'Your account has been suspended. Reason: {reason}',
+                    code='suspended',
+                )
+            elif user.profile.status == 'inactive':
+                raise forms.ValidationError(
+                    'Your account is currently inactive. Please contact support.',
+                    code='inactive',
+                )
+
 
 class UserProfileForm(forms.ModelForm):
     first_name = forms.CharField(max_length=50, required=False, widget=forms.TextInput(attrs={'class': 'form-control'}))

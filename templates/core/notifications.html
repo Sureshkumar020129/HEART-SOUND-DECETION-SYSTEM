@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block title %}Notifications{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+      <h3 class="fw-bold mb-1"><i class="bi bi-bell-fill me-2 text-primary"></i>Notification Center</h3>
+      <p class="text-muted small mb-0">Updates on your heart sound analyses, health assessments, and system notices.</p>
+    </div>
+    {% if page_obj %}
+    <form method="post" action="{% url 'core:mark_all_notifications_read' %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-check2-all me-1"></i> Mark All as Read
+      </button>
+    </form>
+    {% endif %}
+  </div>
+
+  <div class="card border-0 bg-card shadow-sm overflow-hidden">
+    <div class="list-group list-group-flush">
+      {% for notif in page_obj %}
+      <div class="list-group-item bg-transparent border-secondary border-opacity-25 p-3 d-flex align-items-start gap-3 {% if not notif.is_read %}bg-primary bg-opacity-10{% endif %}">
+        <div class="mt-1">
+          {% if notif.notification_type == 'success' %}
+            <i class="bi bi-check-circle-fill text-success fs-5"></i>
+          {% elif notif.notification_type == 'danger' %}
+            <i class="bi bi-exclamation-triangle-fill text-danger fs-5"></i>
+          {% elif notif.notification_type == 'warning' %}
+            <i class="bi bi-exclamation-circle-fill text-warning fs-5"></i>
+          {% else %}
+            <i class="bi bi-info-circle-fill text-info fs-5"></i>
+          {% endif %}
+        </div>
+        <div class="flex-grow-1">
+          <div class="d-flex justify-content-between align-items-center">
+            <h6 class="mb-1 fw-bold {% if not notif.is_read %}text-white{% else %}text-muted{% endif %}">{{ notif.title }}</h6>
+            <small class="text-muted">{{ notif.created_at|timesince }} ago</small>
+          </div>
+          <p class="mb-2 text-light small">{{ notif.message }}</p>
+          <div class="d-flex align-items-center gap-2">
+            {% if notif.link_url %}
+            <form method="post" action="{% url 'core:mark_notification_read' notif.id %}" class="d-inline">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size: 0.8rem;">
+                View Details &rarr;
+              </button>
+            </form>
+            {% endif %}
+            {% if not notif.is_read %}
+            <form method="post" action="{% url 'core:mark_notification_read' notif.id %}" class="d-inline">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-sm btn-link text-muted p-0 text-decoration-none" style="font-size: 0.8rem;">
+                Mark as read
+              </button>
+            </form>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="text-center py-5 text-muted">
+        <i class="bi bi-bell-slash fs-1 d-block mb-2 text-secondary"></i>
+        You have no notifications at this time.
+      </div>
+      {% endfor %}
+    </div>
+
+    {% if page_obj.has_other_pages %}
+    <div class="p-3 border-top border-secondary border-opacity-25 d-flex justify-content-between align-items-center">
+      <div class="text-muted small">Showing page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</div>
+      <ul class="pagination pagination-sm m-0">
+        {% if page_obj.has_previous %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">&laquo; Prev</a></li>
+        {% endif %}
+        <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+        {% if page_obj.has_next %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next &raquo;</a></li>
+        {% endif %}
+      </ul>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -211,3 +211,109 @@ class ChatbotServiceTests(TestCase):
         resp = get_chat_response("What does an abnormal classification mean?", [])
         self.assertEqual(resp['source'], 'fallback')
         self.assertIn("Normal vs Abnormal", resp['response'])
+
+
+class AdminPortalSecurityTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.regular_user = User.objects.create_user(
+            username='regularuser', email='reg@example.com', password='Password123!'
+        )
+        self.regular_user.profile.role = 'user'
+        self.regular_user.profile.save()
+
+        self.admin_user = User.objects.create_user(
+            username='adminuser', email='admin@example.com', password='AdminPassword123!',
+            is_staff=True
+        )
+        self.admin_user.profile.role = 'admin'
+        self.admin_user.profile.save()
+
+    def test_regular_user_cannot_access_admin_portal(self):
+        self.client.login(username='regularuser', password='Password123!')
+        admin_urls = [
+            reverse('admin_portal:dashboard'),
+            reverse('admin_portal:user_list'),
+            reverse('admin_portal:analysis_list'),
+            reverse('admin_portal:assessment_list'),
+            reverse('admin_portal:report_list'),
+            reverse('admin_portal:chatbot_monitor'),
+            reverse('admin_portal:model_management'),
+            reverse('admin_portal:audit_log_list'),
+            reverse('admin_portal:site_settings'),
+        ]
+        for url in admin_urls:
+            resp = self.client.get(url)
+            self.assertEqual(resp.status_code, 403, f"Regular user accessed {url}")
+
+    def test_admin_user_can_access_admin_portal(self):
+        self.client.login(username='adminuser', password='AdminPassword123!')
+        resp = self.client.get(reverse('admin_portal:dashboard'))
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Administrative Intelligence Dashboard")
+
+    def test_admin_portal_login_page_renders(self):
+        resp = self.client.get(reverse('admin_portal:login'))
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Admin Security Portal")
+
+    def test_admin_portal_login_rejects_regular_user(self):
+        resp = self.client.post(reverse('admin_portal:login'), {
+            'username': 'regularuser',
+            'password': 'Password123!',
+        })
+        self.assertEqual(resp.status_code, 200)  # Re-renders form with error
+        self.assertFalse(resp.wsgi_request.user.is_authenticated)
+
+    def test_admin_can_export_users_csv(self):
+        self.client.login(username='adminuser', password='AdminPassword123!')
+        resp = self.client.get(reverse('admin_portal:export_users_csv'))
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp['Content-Type'], 'text/csv')
+        self.assertIn('attachment; filename="heartsound_users.csv"', resp['Content-Disposition'])
+
+    def test_admin_can_export_analyses_csv(self):
+        self.client.login(username='adminuser', password='AdminPassword123!')
+        resp = self.client.get(reverse('admin_portal:export_analyses_csv'))
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp['Content-Type'], 'text/csv')
+
+    def test_admin_can_toggle_user_status(self):
+        self.client.login(username='adminuser', password='AdminPassword123!')
+        resp = self.client.post(
+            reverse('admin_portal:user_toggle_status', kwargs={'pk': self.regular_user.id}),
+            {'status': 'suspended', 'reason': 'Violation of research protocol'}
+        )
+        self.assertEqual(resp.status_code, 302)
+        self.regular_user.profile.refresh_from_db()
+        self.assertEqual(self.regular_user.profile.status, 'suspended')
+        self.assertEqual(self.regular_user.profile.suspension_reason, 'Violation of research protocol')
+
+
+class NotificationAndBackupTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(username='notifuser', password='Password123!')
+
+    def test_notification_creation_and_mark_read(self):
+        from core.models import Notification
+        notif = Notification.objects.create(
+            user=self.user,
+            title='Test Alert',
+            message='Your analysis is ready.',
+            notification_type='success',
+            link_url='/dashboard/'
+        )
+        self.assertFalse(notif.is_read)
+
+        self.client.login(username='notifuser', password='Password123!')
+        resp = self.client.post(reverse('core:mark_notification_read', kwargs={'pk': notif.id}))
+        self.assertEqual(resp.status_code, 302)
+        notif.refresh_from_db()
+        self.assertTrue(notif.is_read)
+
+    def test_backup_management_command(self):
+        from django.core.management import call_command
+        call_command('backup_data', retention_days=30)
+        backup_files = list(tempfile.gettempdir())  # runs without raising exceptions
+

@@ -21,7 +21,15 @@ logger = logging.getLogger(__name__)
 @login_required
 def download_report(request, pk):
     """Generate and serve a PDF report for the given analysis."""
-    analysis = get_object_or_404(AnalysisRecord, pk=pk, user=request.user)
+    is_admin_user = (
+        request.user.is_staff or
+        request.user.is_superuser or
+        (hasattr(request.user, 'profile') and request.user.profile.is_admin())
+    )
+    if is_admin_user:
+        analysis = get_object_or_404(AnalysisRecord, pk=pk)
+    else:
+        analysis = get_object_or_404(AnalysisRecord, pk=pk, user=request.user)
 
     if analysis.status not in ('completed', 'model_unavailable'):
         raise Http404("Report not available for this analysis status.")

@@ -23,6 +23,8 @@ urlpatterns = [
     path('chatbot/', include('chatbot.urls')),
     # Reports
     path('reports/', include('reports.urls')),
+    # Admin Portal
+    path('admin-portal/', include('admin_portal.urls')),
 ]
 
 # Serve media files in development (never use this in production)

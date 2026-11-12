@@ -1,0 +1,403 @@
+{% extends 'admin_portal/base_admin.html' %}
+{% load static %}
+
+{% block title %}Dashboard Overview{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <h3 class="fw-bold mb-1">Administrative Intelligence Dashboard</h3>
+    <p class="text-muted small mb-0">System health, clinical predictions, and user engagement monitoring.</p>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{% url 'admin_portal:export_analyses_csv' %}" class="btn btn-sm btn-outline-primary">
+      <i class="bi bi-download me-1"></i> Export Analyses CSV
+    </a>
+    <a href="{% url 'admin_portal:export_users_csv' %}" class="btn btn-sm btn-outline-secondary">
+      <i class="bi bi-file-earmark-spreadsheet me-1"></i> Export Users CSV
+    </a>
+  </div>
+</div>
+
+<!-- Primary Metric Cards -->
+<div class="row g-3 mb-4">
+  <!-- Total Users -->
+  <div class="col-sm-6 col-xl-3">
+    <div class="card h-100 border-0 bg-card p-3 shadow-sm">
+      <div class="d-flex align-items-center justify-content-between">
+        <div>
+          <span class="text-muted small text-uppercase fw-semibold">Total Users</span>
+          <h2 class="fw-bold my-1 stat-number" data-target="{{ total_users }}">{{ total_users }}</h2>
+          <div class="small text-success">
+            <i class="bi bi-person-check-fill me-1"></i> {{ active_users }} Active &bull; <span class="text-danger">{{ suspended_users }} Suspended</span>
+          </div>
+        </div>
+        <div class="p-3 rounded-circle bg-primary bg-opacity-10 text-primary fs-3">
+          <i class="bi bi-people-fill"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Total Analyses -->
+  <div class="col-sm-6 col-xl-3">
+    <div class="card h-100 border-0 bg-card p-3 shadow-sm">
+      <div class="d-flex align-items-center justify-content-between">
+        <div>
+          <span class="text-muted small text-uppercase fw-semibold">Heart Analyses</span>
+          <h2 class="fw-bold my-1 stat-number" data-target="{{ total_analyses }}">{{ total_analyses }}</h2>
+          <div class="small text-info">
+            <i class="bi bi-check2-circle me-1"></i> {{ completed_analyses }} Completed &bull; <span class="text-danger">{{ failed_analyses }} Failed</span>
+          </div>
+        </div>
+        <div class="p-3 rounded-circle bg-info bg-opacity-10 text-info fs-3">
+          <i class="bi bi-soundwave"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Classifications -->
+  <div class="col-sm-6 col-xl-3">
+    <div class="card h-100 border-0 bg-card p-3 shadow-sm">
+      <div class="d-flex align-items-center justify-content-between">
+        <div>
+          <span class="text-muted small text-uppercase fw-semibold">Classifications</span>
+          <h2 class="fw-bold my-1 text-warning">{{ abnormal_count }} <small class="text-muted fs-6">Abnormal</small></h2>
+          <div class="small text-success">
+            <i class="bi bi-heart-pulse-fill me-1"></i> {{ normal_count }} Normal Sounds
+          </div>
+        </div>
+        <div class="p-3 rounded-circle bg-warning bg-opacity-10 text-warning fs-3">
+          <i class="bi bi-heart-pulse"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Health Assessments & Chatbot -->
+  <div class="col-sm-6 col-xl-3">
+    <div class="card h-100 border-0 bg-card p-3 shadow-sm">
+      <div class="d-flex align-items-center justify-content-between">
+        <div>
+          <span class="text-muted small text-uppercase fw-semibold">Clinical Support</span>
+          <h2 class="fw-bold my-1 stat-number" data-target="{{ total_assessments }}">{{ total_assessments }}</h2>
+          <div class="small text-secondary">
+            <i class="bi bi-chat-dots-fill me-1"></i> {{ total_chat_sessions }} Chat Sessions ({{ total_chat_messages }} msgs)
+          </div>
+        </div>
+        <div class="p-3 rounded-circle bg-success bg-opacity-10 text-success fs-3">
+          <i class="bi bi-clipboard2-pulse"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ML Model Health Indicator -->
+<div class="card border-0 bg-card p-3 mb-4 shadow-sm">
+  <div class="row align-items-center">
+    <div class="col-md-8">
+      <div class="d-flex align-items-center gap-2 mb-1">
+        <span class="badge bg-success"><i class="bi bi-check-circle-fill me-1"></i> Operational</span>
+        <h6 class="mb-0 fw-bold">RandomForestClassifier Heart Sound Inference Pipeline</h6>
+      </div>
+      <p class="text-muted small mb-0">
+        Active Model: <strong>HeartSoundClassifier v1.0.0</strong> &bull; 190 Audio Features &bull; Status:
+        {% if ml_model_exists and ml_scaler_exists %}
+          <span class="text-success fw-semibold">Model & Scaler Synchronized (.pkl loaded)</span>
+        {% else %}
+          <span class="text-danger fw-semibold">Model or Scaler File Missing!</span>
+        {% endif %}
+      </p>
+    </div>
+    <div class="col-md-4 text-md-end mt-2 mt-md-0">
+      <a href="{% url 'admin_portal:model_management' %}" class="btn btn-sm btn-outline-info">
+        <i class="bi bi-cpu me-1"></i> Model & Dataset Details
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row g-4 mb-4">
+  <!-- Daily Analyses Activity -->
+  <div class="col-lg-8">
+    <div class="card border-0 bg-card h-100 p-3 shadow-sm">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h6 class="fw-bold mb-0"><i class="bi bi-bar-chart-fill me-2 text-primary"></i>Daily Analysis Activity (Last 14 Days)</h6>
+        <span class="badge bg-secondary bg-opacity-25 text-muted">Acoustic Screenings</span>
+      </div>
+      <div style="height: 260px;">
+        <canvas id="analysisChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Normal vs Abnormal Classification Breakdown -->
+  <div class="col-lg-4">
+    <div class="card border-0 bg-card h-100 p-3 shadow-sm">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h6 class="fw-bold mb-0"><i class="bi bi-pie-chart-fill me-2 text-warning"></i>Classifications</h6>
+        <span class="badge bg-secondary bg-opacity-25 text-muted">Distribution</span>
+      </div>
+      <div style="height: 260px; position: relative;">
+        <canvas id="classChart"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Secondary Charts Row -->
+<div class="row g-4 mb-4">
+  <!-- User Registrations -->
+  <div class="col-lg-6">
+    <div class="card border-0 bg-card h-100 p-3 shadow-sm">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h6 class="fw-bold mb-0"><i class="bi bi-graph-up me-2 text-success"></i>User Registrations (Last 14 Days)</h6>
+        <span class="badge bg-secondary bg-opacity-25 text-muted">Growth</span>
+      </div>
+      <div style="height: 220px;">
+        <canvas id="regChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Processing Success vs Failure -->
+  <div class="col-lg-6">
+    <div class="card border-0 bg-card h-100 p-3 shadow-sm">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h6 class="fw-bold mb-0"><i class="bi bi-shield-check me-2 text-info"></i>Processing Reliability</h6>
+        <span class="badge bg-secondary bg-opacity-25 text-muted">Job Status</span>
+      </div>
+      <div style="height: 220px; position: relative;">
+        <canvas id="jobChart"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Tables Row -->
+<div class="row g-4">
+  <!-- Recent Analyses -->
+  <div class="col-lg-7">
+    <div class="card border-0 bg-card h-100 p-3 shadow-sm">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h6 class="fw-bold mb-0"><i class="bi bi-clock-history me-2 text-primary"></i>Recent Heart Sound Analyses</h6>
+        <a href="{% url 'admin_portal:analysis_list' %}" class="small text-decoration-none">View All &rarr;</a>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0" style="font-size: 0.85rem;">
+          <thead class="text-muted">
+            <tr>
+              <th>ID</th>
+              <th>User</th>
+              <th>Status</th>
+              <th>Result</th>
+              <th>Date</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for a in recent_analyses %}
+            <tr>
+              <td><code>{{ a.id|stringformat:".8s" }}...</code></td>
+              <td><strong>{{ a.user.username }}</strong></td>
+              <td>
+                {% if a.status == 'completed' %}
+                  <span class="badge bg-success bg-opacity-20 text-success border border-success border-opacity-25">Completed</span>
+                {% elif a.status == 'failed' or a.status == 'model_unavailable' %}
+                  <span class="badge bg-danger bg-opacity-20 text-danger border border-danger border-opacity-25">Failed</span>
+                {% else %}
+                  <span class="badge bg-warning bg-opacity-20 text-warning border border-warning border-opacity-25">{{ a.status }}</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if a.prediction %}
+                  {% if a.prediction.classification == 'normal' %}
+                    <span class="badge bg-success">NORMAL</span>
+                  {% elif a.prediction.classification == 'abnormal' %}
+                    <span class="badge bg-danger">ABNORMAL</span>
+                  {% else %}
+                    <span class="badge bg-secondary">{{ a.prediction.classification }}</span>
+                  {% endif %}
+                {% else %}
+                  <span class="text-muted">&mdash;</span>
+                {% endif %}
+              </td>
+              <td class="text-muted">{{ a.created_at|date:"M d, H:i" }}</td>
+              <td>
+                <a href="{% url 'admin_portal:analysis_detail' a.id %}" class="btn btn-xs btn-outline-info p-1 px-2" style="font-size: 0.75rem;">
+                  <i class="bi bi-eye"></i> View
+                </a>
+              </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" class="text-center text-muted py-3">No analyses recorded yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Users -->
+  <div class="col-lg-5">
+    <div class="card border-0 bg-card h-100 p-3 shadow-sm">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h6 class="fw-bold mb-0"><i class="bi bi-person-plus me-2 text-info"></i>Latest Registrations</h6>
+        <a href="{% url 'admin_portal:user_list' %}" class="small text-decoration-none">Manage Users &rarr;</a>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0" style="font-size: 0.85rem;">
+          <thead class="text-muted">
+            <tr>
+              <th>User</th>
+              <th>Role</th>
+              <th>Status</th>
+              <th>Joined</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for u in recent_users %}
+            <tr>
+              <td>
+                <div class="fw-semibold">{{ u.username }}</div>
+                <small class="text-muted">{{ u.email|truncatechars:20 }}</small>
+              </td>
+              <td><span class="badge bg-secondary" style="font-size: 0.7rem;">{{ u.profile.role }}</span></td>
+              <td>
+                {% if u.profile.status == 'active' %}
+                  <span class="badge bg-success" style="font-size: 0.7rem;">Active</span>
+                {% else %}
+                  <span class="badge bg-danger" style="font-size: 0.7rem;">{{ u.profile.status }}</span>
+                {% endif %}
+              </td>
+              <td class="text-muted">{{ u.date_joined|date:"M d" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" class="text-center text-muted py-3">No registered users yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Chart Colors
+  const cyanColor = '#00f5d4';
+  const blueColor = '#00bbf9';
+  const pinkColor = '#ff007f';
+  const purpleColor = '#9b5de5';
+  const gridColor = 'rgba(255, 255, 255, 0.08)';
+
+  // 1. Daily Analysis Chart
+  const analysisCtx = document.getElementById('analysisChart');
+  if (analysisCtx) {
+    new Chart(analysisCtx, {
+      type: 'bar',
+      data: {
+        labels: {{ analysis_labels|safe }},
+        datasets: [{
+          label: 'Heart Analyses',
+          data: {{ analysis_values|safe }},
+          backgroundColor: 'rgba(0, 245, 212, 0.5)',
+          borderColor: cyanColor,
+          borderWidth: 1.5,
+          borderRadius: 6,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { color: gridColor }, ticks: { color: '#94a3b8' } },
+          y: { grid: { color: gridColor }, ticks: { color: '#94a3b8', precision: 0 }, beginAtZero: true }
+        }
+      }
+    });
+  }
+
+  // 2. Classifications Doughnut Chart
+  const classCtx = document.getElementById('classChart');
+  if (classCtx) {
+    new Chart(classCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Normal', 'Abnormal', 'Uncertain'],
+        datasets: [{
+          data: {{ normal_vs_abnormal|safe }},
+          backgroundColor: ['#10b981', '#ef4444', '#64748b'],
+          borderWidth: 2,
+          borderColor: '#0d1529'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'bottom', labels: { color: '#cbd5e1', padding: 12 } }
+        }
+      }
+    });
+  }
+
+  // 3. User Registrations Line Chart
+  const regCtx = document.getElementById('regChart');
+  if (regCtx) {
+    new Chart(regCtx, {
+      type: 'line',
+      data: {
+        labels: {{ reg_labels|safe }},
+        datasets: [{
+          label: 'Registrations',
+          data: {{ reg_values|safe }},
+          borderColor: '#10b981',
+          backgroundColor: 'rgba(16, 185, 129, 0.15)',
+          fill: true,
+          tension: 0.35,
+          borderWidth: 2,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { color: gridColor }, ticks: { color: '#94a3b8' } },
+          y: { grid: { color: gridColor }, ticks: { color: '#94a3b8', precision: 0 }, beginAtZero: true }
+        }
+      }
+    });
+  }
+
+  // 4. Job Reliability Chart
+  const jobCtx = document.getElementById('jobChart');
+  if (jobCtx) {
+    new Chart(jobCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Completed', 'Failed', 'Processing'],
+        datasets: [{
+          data: {{ success_vs_failed|safe }},
+          backgroundColor: ['#00f5d4', '#ff007f', '#f59e0b'],
+          borderWidth: 2,
+          borderColor: '#0d1529'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'bottom', labels: { color: '#cbd5e1', padding: 12 } }
+        }
+      }
+    });
+  }
+</script>
+{% endblock %}

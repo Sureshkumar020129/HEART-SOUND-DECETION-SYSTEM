@@ -1,0 +1,140 @@
+{% extends 'admin_portal/base_admin.html' %}
+
+{% block title %}User Management{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+  <div>
+    <h3 class="fw-bold mb-1">User Management</h3>
+    <p class="text-muted small mb-0">View registered clinical accounts, manage status, and inspect activity records.</p>
+  </div>
+  <a href="{% url 'admin_portal:export_users_csv' %}" class="btn btn-sm btn-outline-primary">
+    <i class="bi bi-file-earmark-spreadsheet me-1"></i> Export Users (CSV)
+  </a>
+</div>
+
+<!-- Search & Filter Card -->
+<div class="card border-0 bg-card p-3 mb-4 shadow-sm">
+  <form method="get" class="row g-2 align-items-center">
+    <div class="col-md-5">
+      <div class="input-group">
+        <span class="input-group-text bg-dark border-secondary border-opacity-25 text-muted"><i class="bi bi-search"></i></span>
+        <input type="text" name="q" class="form-control" placeholder="Search by username, email, or name..." value="{{ search_query }}">
+      </div>
+    </div>
+    <div class="col-md-3">
+      <select name="status" class="form-select">
+        <option value="">All Account Statuses</option>
+        <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
+        <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Inactive</option>
+        <option value="suspended" {% if status_filter == 'suspended' %}selected{% endif %}>Suspended</option>
+      </select>
+    </div>
+    <div class="col-md-2">
+      <select name="role" class="form-select">
+        <option value="">All Roles</option>
+        <option value="user" {% if role_filter == 'user' %}selected{% endif %}>Standard User</option>
+        <option value="admin" {% if role_filter == 'admin' %}selected{% endif %}>Administrator</option>
+      </select>
+    </div>
+    <div class="col-md-2 d-flex gap-2">
+      <button type="submit" class="btn btn-primary w-100"><i class="bi bi-funnel me-1"></i>Filter</button>
+      {% if search_query or status_filter or role_filter %}
+      <a href="{% url 'admin_portal:user_list' %}" class="btn btn-outline-secondary" title="Clear Filters"><i class="bi bi-x-lg"></i></a>
+      {% endif %}
+    </div>
+  </form>
+</div>
+
+<!-- Users Table -->
+<div class="card border-0 bg-card shadow-sm overflow-hidden">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="text-muted border-bottom border-secondary border-opacity-25">
+        <tr>
+          <th>User</th>
+          <th>Contact & Email</th>
+          <th>Role</th>
+          <th>Status</th>
+          <th>Analyses</th>
+          <th>Joined</th>
+          <th>Last Login</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in page_obj %}
+        <tr>
+          <td>
+            <div class="d-flex align-items-center gap-2">
+              <div class="avatar-placeholder rounded-circle bg-secondary bg-opacity-25 text-info fw-bold" style="width: 34px; height: 34px; display:flex; align-items:center; justify-content:center; font-size: 0.85rem;">
+                {{ u.first_name|first|upper|default:u.username|first|upper }}
+              </div>
+              <div>
+                <a href="{% url 'admin_portal:user_detail' u.id %}" class="fw-bold text-decoration-none text-light">{{ u.username }}</a>
+                <div class="text-muted small">{{ u.get_full_name|default:"No name provided" }}</div>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div>{{ u.email }}</div>
+            {% if u.profile.phone %}<small class="text-muted">{{ u.profile.phone }}</small>{% endif %}
+          </td>
+          <td>
+            {% if u.is_superuser %}
+              <span class="badge bg-danger">Superuser</span>
+            {% elif u.profile.role == 'admin' or u.is_staff %}
+              <span class="badge bg-warning text-dark">Admin</span>
+            {% else %}
+              <span class="badge bg-secondary">User</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if u.profile.status == 'active' %}
+              <span class="badge bg-success bg-opacity-20 text-success border border-success border-opacity-25">Active</span>
+            {% elif u.profile.status == 'suspended' %}
+              <span class="badge bg-danger bg-opacity-20 text-danger border border-danger border-opacity-25">Suspended</span>
+            {% else %}
+              <span class="badge bg-secondary bg-opacity-20 text-secondary border border-secondary border-opacity-25">{{ u.profile.status }}</span>
+            {% endif %}
+          </td>
+          <td>
+            <span class="badge bg-dark border border-secondary border-opacity-25">{{ u.analyses_count }}</span>
+          </td>
+          <td class="text-muted small">{{ u.date_joined|date:"M d, Y" }}</td>
+          <td class="text-muted small">{{ u.last_login|date:"M d, H:i"|default:"Never" }}</td>
+          <td class="text-end">
+            <a href="{% url 'admin_portal:user_detail' u.id %}" class="btn btn-sm btn-outline-info">
+              <i class="bi bi-eye me-1"></i> Inspect
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="8" class="text-center py-5 text-muted">
+            <i class="bi bi-people fs-1 d-block mb-2 text-secondary"></i>
+            No users match the search and filter criteria.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  {% if page_obj.has_other_pages %}
+  <div class="p-3 border-top border-secondary border-opacity-25 d-flex justify-content-between align-items-center">
+    <div class="text-muted small">Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} users</div>
+    <ul class="pagination pagination-sm m-0">
+      {% if page_obj.has_previous %}
+      <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ search_query }}&status={{ status_filter }}&role={{ role_filter }}">&laquo; Prev</a></li>
+      {% endif %}
+      <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+      {% if page_obj.has_next %}
+      <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ search_query }}&status={{ status_filter }}&role={{ role_filter }}">Next &raquo;</a></li>
+      {% endif %}
+    </ul>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

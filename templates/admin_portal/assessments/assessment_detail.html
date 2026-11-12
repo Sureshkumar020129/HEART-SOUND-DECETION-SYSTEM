@@ -1,0 +1,148 @@
+{% extends 'admin_portal/base_admin.html' %}
+
+{% block title %}Assessment #{{ assessment.id }}{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+  <div>
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb small mb-1">
+        <li class="breadcrumb-item"><a href="{% url 'admin_portal:assessment_list' %}" class="text-decoration-none">Assessments</a></li>
+        <li class="breadcrumb-item active">#{{ assessment.id }}</li>
+      </ol>
+    </nav>
+    <div class="d-flex align-items-center gap-2">
+      <h3 class="fw-bold mb-0">Health Assessment #{{ assessment.id }}</h3>
+      <span class="badge {% if assessment.risk_level == 'seek_urgent' %}bg-danger{% elif assessment.risk_level == 'high' %}bg-warning text-dark{% else %}bg-success{% endif %}">
+        {{ assessment.get_risk_level_display }} Risk
+      </span>
+    </div>
+  </div>
+
+  <a href="{% url 'admin_portal:user_detail' assessment.user.id %}" class="btn btn-sm btn-outline-info">
+    <i class="bi bi-person me-1"></i> View User Profile
+  </a>
+</div>
+
+<div class="row g-4">
+  <!-- Triage Summary Card -->
+  <div class="col-lg-4">
+    <div class="card border-0 bg-card p-4 shadow-sm mb-4">
+      <h6 class="fw-bold text-muted text-uppercase small mb-3">Triage Evaluation</h6>
+      <div class="text-center p-3 rounded mb-3 {% if assessment.risk_level == 'seek_urgent' %}bg-danger bg-opacity-15 border border-danger border-opacity-25 text-danger{% elif assessment.risk_level == 'high' %}bg-warning bg-opacity-15 border border-warning border-opacity-25 text-warning{% else %}bg-success bg-opacity-15 border border-success border-opacity-25 text-success{% endif %}">
+        <span class="text-uppercase small fw-semibold d-block">Screening Risk Tier</span>
+        <h3 class="fw-bold my-1">{{ assessment.get_risk_level_display|upper }}</h3>
+      </div>
+      <div class="alert alert-secondary py-2 small mb-3">
+        <i class="bi bi-shield-exclamation me-1"></i> Rule-based heuristic risk categorization. Not a definitive clinical diagnosis.
+      </div>
+      <ul class="list-unstyled small mb-0">
+        <li class="py-1 d-flex justify-content-between border-bottom border-secondary border-opacity-25">
+          <span class="text-muted">User:</span>
+          <strong>{{ assessment.user.username }}</strong>
+        </li>
+        <li class="py-1 d-flex justify-content-between border-bottom border-secondary border-opacity-25">
+          <span class="text-muted">Reported Age:</span>
+          <span>{{ assessment.age|default:"Not specified" }} years</span>
+        </li>
+        <li class="py-1 d-flex justify-content-between border-bottom border-secondary border-opacity-25">
+          <span class="text-muted">Submission Date:</span>
+          <span>{{ assessment.submitted_at|date:"Y-m-d H:i:s" }}</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Detailed Questionnaire Answers -->
+  <div class="col-lg-8">
+    <div class="card border-0 bg-card p-4 shadow-sm">
+      <h6 class="fw-bold text-muted text-uppercase small mb-3">Reported Symptoms & Risk Factors</h6>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <div class="p-3 bg-dark rounded border border-secondary border-opacity-25">
+            <span class="text-muted small d-block">Chest Discomfort</span>
+            <div class="fw-bold mt-1">{{ assessment.get_chest_discomfort_display }}</div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="p-3 bg-dark rounded border border-secondary border-opacity-25">
+            <span class="text-muted small d-block">Chest Pain Intensity (0-10)</span>
+            <div class="fw-bold mt-1 text-warning">{{ assessment.chest_pain_level }} / 10</div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="p-3 bg-dark rounded border border-secondary border-opacity-25">
+            <span class="text-muted small d-block">Shortness of Breath</span>
+            <div class="fw-bold mt-1">{{ assessment.get_shortness_of_breath_display }}</div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="p-3 bg-dark rounded border border-secondary border-opacity-25">
+            <span class="text-muted small d-block">Dyspnea at Rest</span>
+            <div class="fw-bold mt-1">{{ assessment.get_shortness_at_rest_display }}</div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="p-3 bg-dark rounded border border-secondary border-opacity-25">
+            <span class="text-muted small d-block">Dizziness / Lightheadedness</span>
+            <div class="fw-bold mt-1">{{ assessment.get_dizziness_display }}</div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="p-3 bg-dark rounded border border-secondary border-opacity-25">
+            <span class="text-muted small d-block">Fainting / Syncope Episodes</span>
+            <div class="fw-bold mt-1 {% if assessment.fainting == 'yes' %}text-danger{% endif %}">{{ assessment.get_fainting_display }}</div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="p-3 bg-dark rounded border border-secondary border-opacity-25">
+            <span class="text-muted small d-block">Heart Palpitations / Fluttering</span>
+            <div class="fw-bold mt-1">{{ assessment.get_palpitations_display }}</div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="p-3 bg-dark rounded border border-secondary border-opacity-25">
+            <span class="text-muted small d-block">Swollen Ankles / Lower Extremity Edema</span>
+            <div class="fw-bold mt-1">{{ assessment.get_swollen_ankles_display }}</div>
+          </div>
+        </div>
+      </div>
+
+      <h6 class="fw-bold text-muted text-uppercase small mt-4 mb-3">Cardiovascular Risk History</h6>
+      <div class="row g-3">
+        <div class="col-md-3">
+          <div class="p-2 bg-dark rounded border border-secondary border-opacity-25 text-center">
+            <span class="text-muted small d-block" style="font-size: 0.75rem;">Tobacco Smoker</span>
+            <strong>{{ assessment.get_smoker_display }}</strong>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="p-2 bg-dark rounded border border-secondary border-opacity-25 text-center">
+            <span class="text-muted small d-block" style="font-size: 0.75rem;">Diabetes</span>
+            <strong>{{ assessment.get_diabetes_display }}</strong>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="p-2 bg-dark rounded border border-secondary border-opacity-25 text-center">
+            <span class="text-muted small d-block" style="font-size: 0.75rem;">Hypertension</span>
+            <strong>{{ assessment.get_high_blood_pressure_display }}</strong>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="p-2 bg-dark rounded border border-secondary border-opacity-25 text-center">
+            <span class="text-muted small d-block" style="font-size: 0.75rem;">Family History</span>
+            <strong>{{ assessment.get_family_heart_history_display }}</strong>
+          </div>
+        </div>
+      </div>
+
+      {% if assessment.additional_notes %}
+      <div class="mt-4 pt-3 border-top border-secondary border-opacity-25">
+        <h6 class="fw-bold text-muted small">Additional User Notes</h6>
+        <div class="p-3 bg-dark rounded text-light small">{{ assessment.additional_notes }}</div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

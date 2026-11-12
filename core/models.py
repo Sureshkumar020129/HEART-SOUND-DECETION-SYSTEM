@@ -73,3 +73,30 @@ class SiteConfiguration(models.Model):
     def get_config(cls):
         config, _ = cls.objects.get_or_create(pk=1)
         return config
+
+
+class Notification(models.Model):
+    """In-app user and administrative notifications."""
+    TYPE_CHOICES = [
+        ('info', 'Information'),
+        ('success', 'Success'),
+        ('warning', 'Warning'),
+        ('danger', 'Urgent / Alert'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    title = models.CharField(max_length=200)
+    message = models.TextField()
+    notification_type = models.CharField(max_length=20, choices=TYPE_CHOICES, default='info')
+    link_url = models.CharField(max_length=255, blank=True)
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['user', 'is_read', 'created_at']),
+        ]
+
+    def __str__(self):
+        return f"Notification for {self.user.username}: {self.title}"

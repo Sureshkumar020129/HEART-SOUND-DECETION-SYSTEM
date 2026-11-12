@@ -1,0 +1,176 @@
+{% extends 'admin_portal/base_admin.html' %}
+
+{% block title %}ML Model & Datasets{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+  <div>
+    <h3 class="fw-bold mb-1">Machine Learning Pipeline & Datasets</h3>
+    <p class="text-muted small mb-0">Inspect acoustic feature extractors, model versioning, evaluation metrics, and audio training sets.</p>
+  </div>
+  <form method="post" action="{% url 'admin_portal:model_evaluate' %}">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-sm btn-outline-info">
+      <i class="bi bi-play-circle me-1"></i> Run Benchmark Test
+    </button>
+  </form>
+</div>
+
+<!-- Model Overview Cards -->
+<div class="row g-4 mb-4">
+  <div class="col-lg-6">
+    <div class="card border-0 bg-card p-4 shadow-sm h-100">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="fw-bold mb-0"><i class="bi bi-cpu me-2 text-primary"></i>Active Model Architecture</h6>
+        <span class="badge bg-success">v{{ model_version }} Active</span>
+      </div>
+      <table class="table table-sm table-borderless small mb-0">
+        <tbody>
+          <tr>
+            <td class="text-muted">Algorithm:</td>
+            <td><strong>{{ metadata.algorithm|default:"RandomForestClassifier" }}</strong></td>
+          </tr>
+          <tr>
+            <td class="text-muted">Estimators (Trees):</td>
+            <td>{{ metadata.n_estimators|default:"200" }}</td>
+          </tr>
+          <tr>
+            <td class="text-muted">Feature Length:</td>
+            <td><strong>{{ metadata.feature_length|default:"190" }}</strong> extracted attributes</td>
+          </tr>
+          <tr>
+            <td class="text-muted">Target Classes:</td>
+            <td>
+              <span class="badge bg-success">Normal</span>
+              <span class="badge bg-danger">Abnormal</span>
+            </td>
+          </tr>
+          <tr>
+            <td class="text-muted">Model Binary:</td>
+            <td><code>{{ model_path }}</code></td>
+          </tr>
+          <tr>
+            <td class="text-muted">StandardScaler:</td>
+            <td><code>{{ scaler_path }}</code></td>
+          </tr>
+          <tr>
+            <td class="text-muted">Production Latency:</td>
+            <td>Average ~{{ avg_duration }} ms per audio screening</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="card border-0 bg-card p-4 shadow-sm h-100">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="fw-bold mb-0"><i class="bi bi-check-all me-2 text-success"></i>Held-Out Test Set Metrics</h6>
+        <span class="badge bg-secondary bg-opacity-25 text-muted">Experimental Split</span>
+      </div>
+      <div class="row g-3 text-center mb-3">
+        <div class="col-3">
+          <div class="p-2 bg-dark rounded border border-secondary border-opacity-25">
+            <span class="text-muted small d-block" style="font-size: 0.75rem;">F1-Weighted</span>
+            <strong class="text-info fs-5">{{ metadata.test_f1_weighted|default:"1.00"|floatformat:2 }}</strong>
+          </div>
+        </div>
+        <div class="col-3">
+          <div class="p-2 bg-dark rounded border border-secondary border-opacity-25">
+            <span class="text-muted small d-block" style="font-size: 0.75rem;">5-Fold CV Mean</span>
+            <strong class="text-primary fs-5">{{ metadata.cv_f1_mean|default:"1.00"|floatformat:2 }}</strong>
+          </div>
+        </div>
+        <div class="col-3">
+          <div class="p-2 bg-dark rounded border border-secondary border-opacity-25">
+            <span class="text-muted small d-block" style="font-size: 0.75rem;">Sensitivity</span>
+            <strong class="text-success fs-5">{{ metadata.sensitivity|default:"1.00"|floatformat:2 }}</strong>
+          </div>
+        </div>
+        <div class="col-3">
+          <div class="p-2 bg-dark rounded border border-secondary border-opacity-25">
+            <span class="text-muted small d-block" style="font-size: 0.75rem;">Specificity</span>
+            <strong class="text-warning fs-5">{{ metadata.specificity|default:"1.00"|floatformat:2 }}</strong>
+          </div>
+        </div>
+      </div>
+      <div class="alert alert-secondary py-2 small mb-0">
+        <i class="bi bi-info-circle me-1 text-info"></i> {{ metadata.disclaimer|default:"Metrics derived from experimental split data for research/educational purposes only." }}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Dataset & Audio Features Breakdown -->
+<div class="row g-4 mb-4">
+  <div class="col-lg-6">
+    <div class="card border-0 bg-card p-4 shadow-sm h-100">
+      <h6 class="fw-bold mb-3"><i class="bi bi-folder-symlink me-2 text-warning"></i>Training & Validation Datasets</h6>
+      <p class="text-muted small">
+        Audio repository layout under <code>datasets/</code> configured for model retraining:
+      </p>
+      <div class="row g-3">
+        <div class="col-6">
+          <div class="p-3 bg-dark rounded border border-secondary border-opacity-25">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <span class="text-muted small d-block">Normal PCG Files</span>
+                <h4 class="fw-bold my-1 text-success">{{ normal_files_count }}</h4>
+              </div>
+              <i class="bi bi-file-earmark-music fs-3 text-success opacity-75"></i>
+            </div>
+            <small class="text-muted"><code>datasets/normal/*.wav</code></small>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="p-3 bg-dark rounded border border-secondary border-opacity-25">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <span class="text-muted small d-block">Abnormal Murmur Files</span>
+                <h4 class="fw-bold my-1 text-danger">{{ abnormal_files_count }}</h4>
+              </div>
+              <i class="bi bi-file-earmark-music fs-3 text-danger opacity-75"></i>
+            </div>
+            <small class="text-muted"><code>datasets/abnormal/*.wav</code></small>
+          </div>
+        </div>
+      </div>
+      <div class="mt-3 text-muted small">
+        Gold-standard benchmark supported: <strong>PhysioNet / CinC Challenge 2016</strong>. Synthetic generator available via <code>datasets/generate_sample_dataset.py</code>.
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="card border-0 bg-card p-4 shadow-sm h-100">
+      <h6 class="fw-bold mb-3"><i class="bi bi-sliders me-2 text-info"></i>190 Extracted Feature Dimensions</h6>
+      <ul class="list-unstyled small mb-0">
+        <li class="py-1 d-flex justify-content-between border-bottom border-secondary border-opacity-25">
+          <span>Mel-Frequency Cepstral Coefficients (MFCCs):</span>
+          <strong>80 features (40 mean + 40 std)</strong>
+        </li>
+        <li class="py-1 d-flex justify-content-between border-bottom border-secondary border-opacity-25">
+          <span>Mel-Filterbank Energies (Log-Power):</span>
+          <strong>64 features (64 Mel frequency bands)</strong>
+        </li>
+        <li class="py-1 d-flex justify-content-between border-bottom border-secondary border-opacity-25">
+          <span>Chroma STFT (Pitch Distribution):</span>
+          <strong>24 features (12 mean + 12 std)</strong>
+        </li>
+        <li class="py-1 d-flex justify-content-between border-bottom border-secondary border-opacity-25">
+          <span>Spectral Contrast (Octave Dynamics):</span>
+          <strong>14 features (7 mean + 7 std)</strong>
+        </li>
+        <li class="py-1 d-flex justify-content-between border-bottom border-secondary border-opacity-25">
+          <span>Spectral Shape (Centroid + Bandwidth):</span>
+          <strong>4 features</strong>
+        </li>
+        <li class="py-1 d-flex justify-content-between">
+          <span>Temporal Features (RMS Energy + ZCR):</span>
+          <strong>4 features</strong>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}

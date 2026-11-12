@@ -38,6 +38,37 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 16);
   });
 
+  // Theme Toggle Handler
+  function initTheme() {
+    const saved = localStorage.getItem('hs_theme') || 'dark';
+    document.documentElement.setAttribute('data-bs-theme', saved);
+    updateThemeIcons(saved);
+
+    document.querySelectorAll('.theme-toggle-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const current = document.documentElement.getAttribute('data-bs-theme') || 'dark';
+        const next = current === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-bs-theme', next);
+        localStorage.setItem('hs_theme', next);
+        updateThemeIcons(next);
+      });
+    });
+  }
+
+  function updateThemeIcons(theme) {
+    document.querySelectorAll('.theme-icon').forEach(icon => {
+      if (theme === 'light') {
+        icon.classList.remove('bi-sun-fill');
+        icon.classList.add('bi-moon-stars-fill');
+      } else {
+        icon.classList.remove('bi-moon-stars-fill');
+        icon.classList.add('bi-sun-fill');
+      }
+    });
+  }
+
+  initTheme();
+
   // Upload zone drag & drop
   const uploadZone = document.getElementById('uploadZone');
   const fileInput = document.getElementById('audioFileInput');

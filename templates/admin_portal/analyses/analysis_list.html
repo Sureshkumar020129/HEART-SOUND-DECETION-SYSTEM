@@ -1,0 +1,162 @@
+{% extends 'admin_portal/base_admin.html' %}
+
+{% block title %}Heart Sound Analyses{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+  <div>
+    <h3 class="fw-bold mb-1">Heart Sound Analyses</h3>
+    <p class="text-muted small mb-0">Platform-wide acoustic inference jobs, classification outcomes, and waveform monitoring.</p>
+  </div>
+  <a href="{% url 'admin_portal:export_analyses_csv' %}" class="btn btn-sm btn-outline-primary">
+    <i class="bi bi-file-earmark-spreadsheet me-1"></i> Export Metadata (CSV)
+  </a>
+</div>
+
+<!-- Search & Filters -->
+<div class="card border-0 bg-card p-3 mb-4 shadow-sm">
+  <form method="get" class="row g-2 align-items-center">
+    <div class="col-md-5">
+      <div class="input-group">
+        <span class="input-group-text bg-dark border-secondary border-opacity-25 text-muted"><i class="bi bi-search"></i></span>
+        <input type="text" name="q" class="form-control" placeholder="Search by Analysis ID, username, or filename..." value="{{ search_query }}">
+      </div>
+    </div>
+    <div class="col-md-3">
+      <select name="status" class="form-select">
+        <option value="">All Job Statuses</option>
+        <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>Completed</option>
+        <option value="failed" {% if status_filter == 'failed' %}selected{% endif %}>Failed</option>
+        <option value="processing" {% if status_filter == 'processing' %}selected{% endif %}>Processing</option>
+        <option value="queued" {% if status_filter == 'queued' %}selected{% endif %}>Queued</option>
+        <option value="model_unavailable" {% if status_filter == 'model_unavailable' %}selected{% endif %}>Model Unavailable</option>
+      </select>
+    </div>
+    <div class="col-md-2">
+      <select name="classification" class="form-select">
+        <option value="">All Predictions</option>
+        <option value="normal" {% if class_filter == 'normal' %}selected{% endif %}>Normal</option>
+        <option value="abnormal" {% if class_filter == 'abnormal' %}selected{% endif %}>Abnormal</option>
+        <option value="uncertain" {% if class_filter == 'uncertain' %}selected{% endif %}>Uncertain</option>
+      </select>
+    </div>
+    <div class="col-md-2 d-flex gap-2">
+      <button type="submit" class="btn btn-primary w-100"><i class="bi bi-funnel me-1"></i>Filter</button>
+      {% if search_query or status_filter or class_filter %}
+      <a href="{% url 'admin_portal:analysis_list' %}" class="btn btn-outline-secondary" title="Clear Filters"><i class="bi bi-x-lg"></i></a>
+      {% endif %}
+    </div>
+  </form>
+</div>
+
+<!-- Analyses Table -->
+<div class="card border-0 bg-card shadow-sm overflow-hidden">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="text-muted border-bottom border-secondary border-opacity-25">
+        <tr>
+          <th>Analysis ID</th>
+          <th>User</th>
+          <th>Original Audio</th>
+          <th>Job Status</th>
+          <th>Prediction</th>
+          <th>Confidence</th>
+          <th>Latency</th>
+          <th>Timestamp</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for a in page_obj %}
+        <tr>
+          <td>
+            <a href="{% url 'admin_portal:analysis_detail' a.id %}" class="fw-bold text-decoration-none text-info">
+              <code>{{ a.id|stringformat:".8s" }}...</code>
+            </a>
+          </td>
+          <td>
+            <a href="{% url 'admin_portal:user_detail' a.user.id %}" class="text-light text-decoration-none">
+              {{ a.user.username }}
+            </a>
+          </td>
+          <td>
+            <div class="small text-truncate" style="max-width: 160px;" title="{{ a.recording.original_filename }}">
+              {{ a.recording.original_filename|default:"Browser Recording" }}
+            </div>
+            <small class="text-muted">{{ a.recording.duration_seconds|floatformat:1 }}s &bull; {{ a.recording.file_size_bytes|filesizeformat }}</small>
+          </td>
+          <td>
+            {% if a.status == 'completed' %}
+              <span class="badge bg-success bg-opacity-20 text-success border border-success border-opacity-25">Completed</span>
+            {% elif a.status == 'failed' or a.status == 'model_unavailable' %}
+              <span class="badge bg-danger bg-opacity-20 text-danger border border-danger border-opacity-25">Failed</span>
+            {% else %}
+              <span class="badge bg-warning bg-opacity-20 text-warning border border-warning border-opacity-25">{{ a.status }}</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if a.prediction %}
+              {% if a.prediction.classification == 'normal' %}
+                <span class="badge bg-success">NORMAL</span>
+              {% elif a.prediction.classification == 'abnormal' %}
+                <span class="badge bg-danger">ABNORMAL</span>
+              {% else %}
+                <span class="badge bg-secondary">{{ a.prediction.classification|upper }}</span>
+              {% endif %}
+            {% else %}
+              <span class="text-muted">&mdash;</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if a.prediction.confidence_score %}
+              <span class="fw-semibold">{{ a.prediction.confidence_score|floatformat:2 }}</span>
+            {% else %}&mdash;{% endif %}
+          </td>
+          <td>
+            {% if a.processing_duration_ms %}
+              <small class="text-muted">{{ a.processing_duration_ms }} ms</small>
+            {% else %}&mdash;{% endif %}
+          </td>
+          <td class="text-muted small">{{ a.created_at|date:"M d, H:i" }}</td>
+          <td class="text-end">
+            <div class="btn-group btn-group-sm">
+              <a href="{% url 'admin_portal:analysis_detail' a.id %}" class="btn btn-outline-info" title="Inspect Detail">
+                <i class="bi bi-eye"></i>
+              </a>
+              {% if a.status == 'completed' %}
+              <a href="{% url 'reports:download' a.id %}" class="btn btn-outline-primary" title="Download Report">
+                <i class="bi bi-file-pdf"></i>
+              </a>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="9" class="text-center py-5 text-muted">
+            <i class="bi bi-soundwave fs-1 d-block mb-2 text-secondary"></i>
+            No analyses match the criteria.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  {% if page_obj.has_other_pages %}
+  <div class="p-3 border-top border-secondary border-opacity-25 d-flex justify-content-between align-items-center">
+    <div class="text-muted small">Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} analyses</div>
+    <ul class="pagination pagination-sm m-0">
+      {% if page_obj.has_previous %}
+      <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ search_query }}&status={{ status_filter }}&classification={{ class_filter }}">&laquo; Prev</a></li>
+      {% endif %}
+      <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+      {% if page_obj.has_next %}
+      <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ search_query }}&status={{ status_filter }}&classification={{ class_filter }}">Next &raquo;</a></li>
+      {% endif %}
+    </ul>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

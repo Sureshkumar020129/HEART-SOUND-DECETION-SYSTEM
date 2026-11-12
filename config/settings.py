@@ -66,6 +66,7 @@ INSTALLED_APPS = [
     'assessments',
     'chatbot',
     'reports',
+    'admin_portal',
 ]
 
 MIDDLEWARE = [
@@ -162,11 +163,11 @@ MEDIA_ROOT = BASE_DIR / os.getenv('MEDIA_ROOT', 'media')
 # ===========================================================
 MAX_AUDIO_UPLOAD_MB = int(os.getenv('MAX_AUDIO_UPLOAD_MB', 50))
 MAX_UPLOAD_SIZE = MAX_AUDIO_UPLOAD_MB * 1024 * 1024  # bytes
-ALLOWED_AUDIO_EXTENSIONS = ['.wav', '.flac', '.mp3', '.ogg', '.aiff']
+ALLOWED_AUDIO_EXTENSIONS = ['.wav', '.flac', '.mp3', '.ogg', '.aiff', '.webm']
 ALLOWED_AUDIO_CONTENT_TYPES = [
     'audio/wav', 'audio/x-wav', 'audio/flac', 'audio/x-flac',
     'audio/mpeg', 'audio/mp3', 'audio/ogg', 'audio/aiff',
-    'audio/x-aiff',
+    'audio/x-aiff', 'audio/webm', 'video/webm',
 ]
 
 # ===========================================================

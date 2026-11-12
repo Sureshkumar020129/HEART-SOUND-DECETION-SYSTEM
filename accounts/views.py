@@ -2,7 +2,8 @@
 import logging
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth import login, logout, authenticate, update_session_auth_hash
+from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.views import (
     PasswordResetView, PasswordResetDoneView,
@@ -12,7 +13,7 @@ from django.utils import timezone
 from django.urls import reverse_lazy
 from .forms import RegistrationForm, CustomLoginForm, UserProfileForm
 from .models import UserProfile
-from core.models import AuditLog
+from core.models import AuditLog, Notification
 
 logger = logging.getLogger(__name__)
 
@@ -43,13 +44,25 @@ def register_view(request):
             user.first_name = form.cleaned_data['first_name']
             user.last_name = form.cleaned_data['last_name']
             user.save()
-            # Update profile consent
+            # Ensure regular user status and consent
             profile = user.profile
+            profile.role = 'user'
+            profile.status = 'active'
             profile.data_consent = True
             profile.data_consent_at = timezone.now()
             profile.save()
+
+            # Create welcome notification
+            Notification.objects.create(
+                user=user,
+                title="Welcome to HeartSound AI",
+                message="Your account is active. You can start uploading heart sound recordings or take a cardiovascular symptom assessment.",
+                notification_type="success",
+                link_url="/dashboard/"
+            )
+
             login(request, user)
-            _log_action(request, 'register', f'New user: {user.username}')
+            _log_action(request, 'register', f'New user registered: {user.username}')
             messages.success(request, f'Welcome, {user.first_name}! Your account has been created.')
             return redirect('dashboard:dashboard')
         else:
@@ -131,6 +144,37 @@ def profile_view(request):
         'assessment_count': assessment_count,
     }
     return render(request, 'accounts/profile.html', context)
+
+
+@login_required
+def change_password_view(request):
+    """Allow user to change password securely."""
+    if request.method == 'POST':
+        form = PasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)
+            _log_action(request, 'password_reset', 'User changed their password')
+            messages.success(request, 'Your password was successfully updated!')
+            return redirect('accounts:profile')
+        else:
+            messages.error(request, 'Please correct the error below.')
+    else:
+        form = PasswordChangeForm(request.user)
+    return render(request, 'accounts/change_password.html', {'form': form})
+
+
+@login_required
+def delete_account_view(request):
+    """Allow user to request account deletion."""
+    if request.method == 'POST':
+        user = request.user
+        _log_action(request, 'delete', f'User deleted own account: {user.username}')
+        logout(request)
+        user.delete()
+        messages.success(request, 'Your account and personal data have been permanently deleted.')
+        return redirect('core:home')
+    return render(request, 'accounts/delete_account_confirm.html')
 
 
 # Password Reset Views using Django built-ins

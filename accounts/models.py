@@ -11,9 +11,16 @@ class UserProfile(models.Model):
         ('user', 'Standard User'),
         ('admin', 'Administrator'),
     ]
+    STATUS_CHOICES = [
+        ('active', 'Active'),
+        ('inactive', 'Inactive'),
+        ('suspended', 'Suspended'),
+    ]
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='user')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
+    suspension_reason = models.TextField(blank=True)
     phone = models.CharField(max_length=20, blank=True)
     date_of_birth = models.DateField(null=True, blank=True)
     bio = models.TextField(max_length=500, blank=True)
@@ -33,7 +40,7 @@ class UserProfile(models.Model):
         return f"Profile of {self.user.username}"
 
     def is_admin(self):
-        return self.role == 'admin' or self.user.is_staff
+        return self.role == 'admin' or self.user.is_staff or self.user.is_superuser
 
 
 @receiver(post_save, sender=User)

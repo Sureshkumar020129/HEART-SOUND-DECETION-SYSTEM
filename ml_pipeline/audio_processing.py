@@ -37,21 +37,32 @@ def load_and_validate_audio(file_path: str) -> tuple:
     Load an audio file and return (audio_array, sample_rate).
 
     Performs:
-      - Format validation via soundfile
+      - Format validation and decoding (soundfile or librosa/audioread)
       - Duration check
       - Stereo-to-mono conversion
     
     Raises AudioProcessingError on any failure.
     """
-    try:
-        info = sf.info(file_path)
-    except Exception as exc:
-        raise AudioProcessingError(
-            f"Cannot read audio file — it may be corrupted or in an unsupported format. "
-            f"Details: {exc}"
-        )
+    audio = None
+    sr = None
 
-    duration = info.duration
+    try:
+        audio, sr = librosa.load(file_path, sr=None, mono=True)
+    except Exception as exc:
+        try:
+            info = sf.info(file_path)
+            data, sr = sf.read(file_path)
+            audio = data.mean(axis=1) if data.ndim > 1 else data
+        except Exception as exc2:
+            raise AudioProcessingError(
+                f"Failed to decode audio file: {exc}. "
+                "Supported formats: WAV, FLAC, MP3, OGG, AIFF, WEBM."
+            )
+
+    if audio is None or len(audio) == 0:
+        raise AudioProcessingError("Audio file appears to be empty after decoding.")
+
+    duration = len(audio) / sr
     if duration < MIN_DURATION:
         raise AudioProcessingError(
             f"Recording is too short ({duration:.1f}s). "
@@ -62,17 +73,6 @@ def load_and_validate_audio(file_path: str) -> tuple:
             f"Recording is too long ({duration:.1f}s). "
             f"Maximum supported duration is {MAX_DURATION / 60:.0f} minutes."
         )
-
-    try:
-        audio, sr = librosa.load(file_path, sr=None, mono=True)
-    except Exception as exc:
-        raise AudioProcessingError(
-            f"Failed to decode audio: {exc}. "
-            "Supported formats: WAV, FLAC, MP3, OGG, AIFF."
-        )
-
-    if audio is None or len(audio) == 0:
-        raise AudioProcessingError("Audio file appears to be empty after decoding.")
 
     if np.all(audio == 0):
         raise AudioProcessingError(

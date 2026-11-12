@@ -31,7 +31,7 @@ class HeartSoundRecording(models.Model):
     original_filename = models.CharField(max_length=255, blank=True)
     audio_file = models.FileField(
         upload_to=heart_sound_upload_path,
-        validators=[FileExtensionValidator(allowed_extensions=['wav', 'flac', 'mp3', 'ogg', 'aiff'])]
+        validators=[FileExtensionValidator(allowed_extensions=['wav', 'flac', 'mp3', 'ogg', 'aiff', 'webm'])]
     )
     source = models.CharField(max_length=20, choices=SOURCE_CHOICES, default='upload')
     file_size_bytes = models.PositiveIntegerField(default=0)

@@ -1,0 +1,119 @@
+{% extends 'admin_portal/base_admin.html' %}
+
+{% block title %}Security Audit Trail{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+  <div>
+    <h3 class="fw-bold mb-1">Security & Compliance Audit Trail</h3>
+    <p class="text-muted small mb-0">Immutable tracking of user authentication, report downloads, data modifications, and admin actions.</p>
+  </div>
+  <a href="{% url 'admin_portal:export_audit_logs_csv' %}" class="btn btn-sm btn-outline-primary">
+    <i class="bi bi-file-earmark-spreadsheet me-1"></i> Export Audit Logs (CSV)
+  </a>
+</div>
+
+<!-- Search & Action Filters -->
+<div class="card border-0 bg-card p-3 mb-4 shadow-sm">
+  <form method="get" class="row g-2 align-items-center">
+    <div class="col-md-5">
+      <div class="input-group">
+        <span class="input-group-text bg-dark border-secondary border-opacity-25 text-muted"><i class="bi bi-search"></i></span>
+        <input type="text" name="q" class="form-control" placeholder="Search by user, IP address, or description..." value="{{ search_query }}">
+      </div>
+    </div>
+    <div class="col-md-3">
+      <select name="action" class="form-select">
+        <option value="">All Action Types</option>
+        {% for act_val, act_label in action_choices %}
+        <option value="{{ act_val }}" {% if action_filter == act_val %}selected{% endif %}>{{ act_label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-2">
+      <select name="success" class="form-select">
+        <option value="">All Outcomes</option>
+        <option value="true" {% if success_filter == 'true' %}selected{% endif %}>Success Only</option>
+        <option value="false" {% if success_filter == 'false' %}selected{% endif %}>Failed / Blocked Only</option>
+      </select>
+    </div>
+    <div class="col-md-2 d-flex gap-2">
+      <button type="submit" class="btn btn-primary w-100"><i class="bi bi-funnel me-1"></i>Filter</button>
+      {% if search_query or action_filter or success_filter %}
+      <a href="{% url 'admin_portal:audit_log_list' %}" class="btn btn-outline-secondary" title="Clear Filters"><i class="bi bi-x-lg"></i></a>
+      {% endif %}
+    </div>
+  </form>
+</div>
+
+<!-- Logs Table -->
+<div class="card border-0 bg-card shadow-sm overflow-hidden">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0" style="font-size: 0.88rem;">
+      <thead class="text-muted border-bottom border-secondary border-opacity-25">
+        <tr>
+          <th>Timestamp (UTC)</th>
+          <th>User</th>
+          <th>Action Type</th>
+          <th>Description</th>
+          <th>IP Address</th>
+          <th>Outcome</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for log in page_obj %}
+        <tr>
+          <td class="text-muted small"><code>{{ log.timestamp|date:"Y-m-d H:i:s" }}</code></td>
+          <td>
+            {% if log.user %}
+              <a href="{% url 'admin_portal:user_detail' log.user.id %}" class="text-info text-decoration-none fw-semibold">
+                {{ log.user.username }}
+              </a>
+            {% else %}
+              <span class="text-muted">Anonymous / System</span>
+            {% endif %}
+          </td>
+          <td>
+            <span class="badge {% if log.action == 'login' or log.action == 'register' %}bg-primary{% elif log.action == 'admin' %}bg-warning text-dark{% elif log.action == 'delete' %}bg-danger{% elif log.action == 'download' %}bg-info text-dark{% else %}bg-secondary{% endif %}">
+              {{ log.get_action_display }}
+            </span>
+          </td>
+          <td class="text-light">{{ log.description }}</td>
+          <td><code>{{ log.ip_address|default:"N/A" }}</code></td>
+          <td>
+            {% if log.success %}
+              <span class="badge bg-success bg-opacity-20 text-success border border-success border-opacity-25">Success</span>
+            {% else %}
+              <span class="badge bg-danger bg-opacity-20 text-danger border border-danger border-opacity-25">Failed</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" class="text-center py-5 text-muted">
+            <i class="bi bi-shield-check fs-1 d-block mb-2 text-secondary"></i>
+            No audit log entries found matching criteria.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  {% if page_obj.has_other_pages %}
+  <div class="p-3 border-top border-secondary border-opacity-25 d-flex justify-content-between align-items-center">
+    <div class="text-muted small">Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} logs</div>
+    <ul class="pagination pagination-sm m-0">
+      {% if page_obj.has_previous %}
+      <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ search_query }}&action={{ action_filter }}&success={{ success_filter }}">&laquo; Prev</a></li>
+      {% endif %}
+      <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+      {% if page_obj.has_next %}
+      <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ search_query }}&action={{ action_filter }}&success={{ success_filter }}">Next &raquo;</a></li>
+      {% endif %}
+    </ul>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

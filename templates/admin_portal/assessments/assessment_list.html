@@ -1,0 +1,139 @@
+{% extends 'admin_portal/base_admin.html' %}
+
+{% block title %}Health Assessments{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+  <div>
+    <h3 class="fw-bold mb-1">Cardiovascular Symptom Assessments</h3>
+    <p class="text-muted small mb-0">Self-reported questionnaire logs, risk triage tiers, and associated user histories.</p>
+  </div>
+  <a href="{% url 'admin_portal:export_assessments_csv' %}" class="btn btn-sm btn-outline-primary">
+    <i class="bi bi-file-earmark-spreadsheet me-1"></i> Export Assessments (CSV)
+  </a>
+</div>
+
+<!-- Search & Risk Filter -->
+<div class="card border-0 bg-card p-3 mb-4 shadow-sm">
+  <form method="get" class="row g-2 align-items-center">
+    <div class="col-md-6">
+      <div class="input-group">
+        <span class="input-group-text bg-dark border-secondary border-opacity-25 text-muted"><i class="bi bi-search"></i></span>
+        <input type="text" name="q" class="form-control" placeholder="Search by username or user email..." value="{{ search_query }}">
+      </div>
+    </div>
+    <div class="col-md-4">
+      <select name="risk" class="form-select">
+        <option value="">All Risk Levels</option>
+        <option value="seek_urgent" {% if risk_filter == 'seek_urgent' %}selected{% endif %}>Seek Urgent Care</option>
+        <option value="high" {% if risk_filter == 'high' %}selected{% endif %}>High Risk</option>
+        <option value="moderate" {% if risk_filter == 'moderate' %}selected{% endif %}>Moderate Risk</option>
+        <option value="low" {% if risk_filter == 'low' %}selected{% endif %}>Low Risk</option>
+      </select>
+    </div>
+    <div class="col-md-2 d-flex gap-2">
+      <button type="submit" class="btn btn-primary w-100"><i class="bi bi-funnel me-1"></i>Filter</button>
+      {% if search_query or risk_filter %}
+      <a href="{% url 'admin_portal:assessment_list' %}" class="btn btn-outline-secondary" title="Clear Filters"><i class="bi bi-x-lg"></i></a>
+      {% endif %}
+    </div>
+  </form>
+</div>
+
+<!-- Assessments Table -->
+<div class="card border-0 bg-card shadow-sm overflow-hidden">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="text-muted border-bottom border-secondary border-opacity-25">
+        <tr>
+          <th>ID</th>
+          <th>User</th>
+          <th>Age</th>
+          <th>Chest Discomfort</th>
+          <th>Pain Score</th>
+          <th>Shortness of Breath</th>
+          <th>Fainting</th>
+          <th>Calculated Triage Risk</th>
+          <th>Submitted Date</th>
+          <th class="text-end">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for a in page_obj %}
+        <tr>
+          <td><strong>#{{ a.id }}</strong></td>
+          <td>
+            <a href="{% url 'admin_portal:user_detail' a.user.id %}" class="text-info text-decoration-none fw-semibold">
+              {{ a.user.username }}
+            </a>
+          </td>
+          <td>{{ a.age|default:"N/A" }}</td>
+          <td>{{ a.get_chest_discomfort_display }}</td>
+          <td>
+            <span class="badge {% if a.chest_pain_level >= 7 %}bg-danger{% elif a.chest_pain_level >= 4 %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+              {{ a.chest_pain_level }} / 10
+            </span>
+          </td>
+          <td>{{ a.get_shortness_of_breath_display }}</td>
+          <td>
+            {% if a.fainting == 'yes' %}
+              <span class="badge bg-danger">YES</span>
+            {% else %}
+              <span class="text-muted">{{ a.get_fainting_display }}</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if a.risk_level == 'seek_urgent' %}
+              <span class="badge bg-danger bg-opacity-20 text-danger border border-danger border-opacity-50 px-2 py-1">
+                <i class="bi bi-exclamation-octagon-fill me-1"></i> SEEK URGENT CARE
+              </span>
+            {% elif a.risk_level == 'high' %}
+              <span class="badge bg-warning bg-opacity-20 text-warning border border-warning border-opacity-50 px-2 py-1">
+                HIGH RISK
+              </span>
+            {% elif a.risk_level == 'moderate' %}
+              <span class="badge bg-info bg-opacity-20 text-info border border-info border-opacity-50 px-2 py-1">
+                MODERATE
+              </span>
+            {% else %}
+              <span class="badge bg-success bg-opacity-20 text-success border border-success border-opacity-50 px-2 py-1">
+                LOW RISK
+              </span>
+            {% endif %}
+          </td>
+          <td class="text-muted small">{{ a.submitted_at|date:"M d, H:i" }}</td>
+          <td class="text-end">
+            <a href="{% url 'admin_portal:assessment_detail' a.id %}" class="btn btn-sm btn-outline-info">
+              <i class="bi bi-eye me-1"></i> Inspect
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="10" class="text-center py-5 text-muted">
+            <i class="bi bi-clipboard-pulse fs-1 d-block mb-2 text-secondary"></i>
+            No symptom assessments found.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  {% if page_obj.has_other_pages %}
+  <div class="p-3 border-top border-secondary border-opacity-25 d-flex justify-content-between align-items-center">
+    <div class="text-muted small">Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} assessments</div>
+    <ul class="pagination pagination-sm m-0">
+      {% if page_obj.has_previous %}
+      <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ search_query }}&risk={{ risk_filter }}">&laquo; Prev</a></li>
+      {% endif %}
+      <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+      {% if page_obj.has_next %}
+      <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ search_query }}&risk={{ risk_filter }}">Next &raquo;</a></li>
+      {% endif %}
+    </ul>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

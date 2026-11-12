@@ -85,14 +85,18 @@ def browser_record_upload(request):
     from django.core.files.base import ContentFile
     import uuid
 
+    # Detect extension from uploaded blob
+    orig_name = getattr(audio_data, 'name', '') or ''
+    ext = '.webm' if 'webm' in orig_name or 'webm' in getattr(audio_data, 'content_type', '') else '.wav'
+
     recording = HeartSoundRecording(
         user=request.user,
-        original_filename='browser_recording.wav',
+        original_filename=f'browser_recording{ext}',
         file_size_bytes=audio_data.size,
         source='browser',
         status='pending',
     )
-    recording.audio_file.save(f'browser_{uuid.uuid4().hex}.wav', audio_data, save=False)
+    recording.audio_file.save(f'browser_{uuid.uuid4().hex}{ext}', audio_data, save=False)
     recording.save()
 
     analysis = AnalysisRecord.objects.create(

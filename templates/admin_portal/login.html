@@ -1,0 +1,126 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Administrator Login | HeartSoundAI Control Panel</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="{% static 'css/main.css' %}" rel="stylesheet">
+  <style>
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at 50% 20%, #151e3f 0%, #0a0f1e 100%);
+      padding: 1.5rem;
+    }
+    .admin-login-card {
+      max-width: 440px;
+      width: 100%;
+      background: rgba(13, 21, 41, 0.95);
+      border: 1px solid rgba(255, 0, 127, 0.25);
+      border-radius: 16px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 30px rgba(255, 0, 127, 0.1);
+      overflow: hidden;
+    }
+    .admin-card-header {
+      background: linear-gradient(135deg, rgba(255, 0, 127, 0.15) 0%, rgba(121, 40, 202, 0.15) 100%);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 2.5rem 2rem 1.75rem;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<div class="admin-login-card">
+  <div class="admin-card-header">
+    <div class="d-inline-flex p-3 rounded-circle bg-danger bg-opacity-10 border border-danger border-opacity-25 mb-3">
+      <i class="bi bi-shield-lock-fill fs-1 text-danger"></i>
+    </div>
+    <h3 class="fw-bold mb-1">HeartSound<span class="text-primary">AI</span></h3>
+    <span class="badge bg-danger bg-opacity-20 text-danger border border-danger border-opacity-25 px-3 py-1 text-uppercase letter-spacing-1">
+      Admin Security Portal
+    </span>
+  </div>
+
+  <div class="p-4 p-md-4">
+    {% if messages %}
+      {% for message in messages %}
+      <div class="alert alert-{{ message.tags|default:'danger' }} alert-dismissible fade show d-flex align-items-center gap-2 mb-3" role="alert">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <div class="small">{{ message }}</div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+      {% endfor %}
+    {% endif %}
+
+    <div class="alert alert-secondary bg-opacity-10 border-secondary border-opacity-25 text-muted small mb-4">
+      <i class="bi bi-info-circle me-1 text-info"></i>
+      This portal is restricted to authorized healthcare and system administrators. All access attempts are recorded in the security audit trail.
+    </div>
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+      <div class="alert alert-danger py-2 px-3 small mb-3">
+        {{ form.non_field_errors }}
+      </div>
+      {% endif %}
+
+      <div class="mb-3">
+        <label for="adminUsername" class="form-label small text-muted fw-semibold">ADMINISTRATOR USERNAME</label>
+        <div class="input-group">
+          <span class="input-group-text bg-dark border-secondary border-opacity-25 text-muted"><i class="bi bi-person"></i></span>
+          {{ form.username }}
+        </div>
+        {% if form.username.errors %}<div class="text-danger small mt-1">{{ form.username.errors }}</div>{% endif %}
+      </div>
+
+      <div class="mb-4">
+        <label for="adminPassword" class="form-label small text-muted fw-semibold">PASSWORD</label>
+        <div class="input-group">
+          <span class="input-group-text bg-dark border-secondary border-opacity-25 text-muted"><i class="bi bi-key"></i></span>
+          {{ form.password }}
+          <button class="btn btn-outline-secondary border-opacity-25" type="button" id="togglePasswordBtn">
+            <i class="bi bi-eye" id="togglePasswordIcon"></i>
+          </button>
+        </div>
+        {% if form.password.errors %}<div class="text-danger small mt-1">{{ form.password.errors }}</div>{% endif %}
+      </div>
+
+      <div class="d-grid mb-3">
+        <button type="submit" class="btn btn-danger btn-lg fw-semibold shadow-sm">
+          <i class="bi bi-box-arrow-in-right me-2"></i>Authenticate & Enter
+        </button>
+      </div>
+
+      <div class="text-center mt-3 pt-3 border-top border-secondary border-opacity-25">
+        <a href="{% url 'accounts:login' %}" class="text-muted small text-decoration-none">
+          <i class="bi bi-arrow-left me-1"></i>Return to Standard User Login
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // Show / Hide Password Toggle
+  const toggleBtn = document.getElementById('togglePasswordBtn');
+  const passwordInput = document.getElementById('adminPassword');
+  const toggleIcon = document.getElementById('togglePasswordIcon');
+
+  if (toggleBtn && passwordInput && toggleIcon) {
+    toggleBtn.addEventListener('click', () => {
+      const isPassword = passwordInput.type === 'password';
+      passwordInput.type = isPassword ? 'text' : 'password';
+      toggleIcon.className = isPassword ? 'bi bi-eye-slash' : 'bi bi-eye';
+    });
+  }
+</script>
+</body>
+</html>

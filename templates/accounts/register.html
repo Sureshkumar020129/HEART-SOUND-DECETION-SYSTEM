@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}Register{% endblock %}
+{% block title %}Create User Account{% endblock %}
 {% block content %}
 <div class="container py-5">
   <div class="row justify-content-center">
@@ -10,40 +10,50 @@
             <i class="bi bi-person-plus text-cyan fs-3"></i>
           </div>
           <h2 class="text-white">Create Account</h2>
-          <p class="text-secondary">Join HeartSound AI — research and educational tool</p>
+          <p class="text-secondary small">Join HeartSound AI &mdash; research and cardiovascular screening tool</p>
         </div>
 
-        <form method="post" novalidate>
+        <form method="post" novalidate id="userRegisterForm">
           {% csrf_token %}
           <div class="row g-3">
             <div class="col-sm-6">
-              <label class="form-label">First Name</label>
+              <label class="form-label text-muted small">First Name</label>
               {{ form.first_name }}
               {% if form.first_name.errors %}<div class="text-danger small mt-1">{{ form.first_name.errors|join:", " }}</div>{% endif %}
             </div>
             <div class="col-sm-6">
-              <label class="form-label">Last Name</label>
+              <label class="form-label text-muted small">Last Name</label>
               {{ form.last_name }}
               {% if form.last_name.errors %}<div class="text-danger small mt-1">{{ form.last_name.errors|join:", " }}</div>{% endif %}
             </div>
             <div class="col-12">
-              <label class="form-label">Username</label>
+              <label class="form-label text-muted small">Username</label>
               {{ form.username }}
               {% if form.username.errors %}<div class="text-danger small mt-1">{{ form.username.errors|join:", " }}</div>{% endif %}
             </div>
             <div class="col-12">
-              <label class="form-label">Email Address</label>
+              <label class="form-label text-muted small">Email Address</label>
               {{ form.email }}
               {% if form.email.errors %}<div class="text-danger small mt-1">{{ form.email.errors|join:", " }}</div>{% endif %}
             </div>
             <div class="col-sm-6">
-              <label class="form-label">Password</label>
-              {{ form.password1 }}
+              <label class="form-label text-muted small">Password</label>
+              <div class="input-group">
+                {{ form.password1 }}
+                <button class="btn btn-outline-secondary border-opacity-25" type="button" id="toggleRegPass1">
+                  <i class="bi bi-eye" id="toggleRegPass1Icon"></i>
+                </button>
+              </div>
               {% if form.password1.errors %}<div class="text-danger small mt-1">{{ form.password1.errors|join:", " }}</div>{% endif %}
             </div>
             <div class="col-sm-6">
-              <label class="form-label">Confirm Password</label>
-              {{ form.password2 }}
+              <label class="form-label text-muted small">Confirm Password</label>
+              <div class="input-group">
+                {{ form.password2 }}
+                <button class="btn btn-outline-secondary border-opacity-25" type="button" id="toggleRegPass2">
+                  <i class="bi bi-eye" id="toggleRegPass2Icon"></i>
+                </button>
+              </div>
               {% if form.password2.errors %}<div class="text-danger small mt-1">{{ form.password2.errors|join:", " }}</div>{% endif %}
             </div>
             <div class="col-12">
@@ -58,18 +68,37 @@
               </div>
             </div>
           </div>
-          <button type="submit" class="btn btn-primary-glow w-100 mt-4">
-            <i class="bi bi-person-plus me-2"></i>Create Account
+          <button type="submit" class="btn btn-primary-glow w-100 mt-4 py-2">
+            <i class="bi bi-person-plus me-2"></i>Create User Account
           </button>
         </form>
 
         <div class="text-center mt-4">
           <p class="text-secondary small">Already have an account?
-            <a href="{% url 'accounts:login' %}" class="text-cyan">Sign in</a>
+            <a href="{% url 'accounts:login' %}" class="text-cyan fw-semibold text-decoration-none">Sign in</a>
           </p>
         </div>
       </div>
     </div>
   </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function setupToggle(btnId, inputName, iconId) {
+    const btn = document.getElementById(btnId);
+    const input = document.querySelector(`input[name="${inputName}"]`);
+    const icon = document.getElementById(iconId);
+    if (btn && input && icon) {
+      btn.addEventListener('click', () => {
+        const isPassword = input.type === 'password';
+        input.type = isPassword ? 'text' : 'password';
+        icon.className = isPassword ? 'bi bi-eye-slash' : 'bi bi-eye';
+      });
+    }
+  }
+  setupToggle('toggleRegPass1', 'password1', 'toggleRegPass1Icon');
+  setupToggle('toggleRegPass2', 'password2', 'toggleRegPass2Icon');
+</script>
 {% endblock %}

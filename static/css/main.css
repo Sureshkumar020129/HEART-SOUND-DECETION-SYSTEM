@@ -30,6 +30,53 @@
   --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Light Theme Variables Override */
+[data-bs-theme="light"] {
+  --bg-primary: #f8fafc;
+  --bg-secondary: #f1f5f9;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f1f5f9;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --border-color: #cbd5e1;
+  --border-glow: rgba(0, 180, 216, 0.25);
+  --gradient-dark: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.08);
+  --shadow-glow: 0 0 20px rgba(0, 180, 216, 0.12);
+}
+
+[data-bs-theme="light"] .card-glass {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+  color: #0f172a;
+}
+
+[data-bs-theme="light"] .navbar {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+[data-bs-theme="light"] .navbar-brand .brand-text {
+  color: #0f172a !important;
+}
+
+[data-bs-theme="light"] .nav-link {
+  color: #475569 !important;
+}
+
+[data-bs-theme="light"] .nav-link:hover,
+[data-bs-theme="light"] .nav-link.active {
+  color: #0284c7 !important;
+}
+
+[data-bs-theme="light"] .footer {
+  background: #f1f5f9;
+  border-top: 1px solid #e2e8f0;
+  color: #475569;
+}
+
 /* ---- Base ---- */
 *, *::before, *::after { box-sizing: border-box; }
 

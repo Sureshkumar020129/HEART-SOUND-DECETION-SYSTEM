@@ -24,6 +24,18 @@ def assessment_view(request):
             assessment.user = request.user
             assessment.save()
             _log(request, 'assessment', f'Risk level: {assessment.risk_level}')
+            try:
+                from core.models import Notification
+                notif_type = 'danger' if assessment.risk_level == 'seek_urgent' else ('warning' if assessment.risk_level == 'high' else 'info')
+                Notification.objects.create(
+                    user=request.user,
+                    title="Health Assessment Completed",
+                    message=f"Your cardiovascular symptom assessment was evaluated with risk level: {assessment.get_risk_level_display()}.",
+                    notification_type=notif_type,
+                    link_url=f"/assessment/{assessment.pk}/"
+                )
+            except Exception:
+                pass
             return redirect('assessments:result', pk=assessment.pk)
         else:
             messages.error(request, 'Please correct the errors and resubmit.')

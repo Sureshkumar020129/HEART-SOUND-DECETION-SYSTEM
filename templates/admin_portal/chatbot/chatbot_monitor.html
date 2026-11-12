@@ -1,0 +1,131 @@
+{% extends 'admin_portal/base_admin.html' %}
+
+{% block title %}Chatbot Monitoring{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+  <div>
+    <h3 class="fw-bold mb-1">HeartCare AI Chatbot Monitor</h3>
+    <p class="text-muted small mb-0">Conversation metrics, fallback rates, safety keyword detection, and provider health.</p>
+  </div>
+</div>
+
+<!-- Service Health Status Cards -->
+<div class="row g-3 mb-4">
+  <div class="col-sm-6 col-xl-3">
+    <div class="card border-0 bg-card p-3 shadow-sm h-100">
+      <span class="text-muted small text-uppercase fw-semibold">Active Provider</span>
+      <h5 class="fw-bold my-2 text-info text-capitalize">{{ current_provider }}</h5>
+      <small class="text-muted">Fallback to Rule-Based Engine: Active</small>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="card border-0 bg-card p-3 shadow-sm h-100">
+      <span class="text-muted small text-uppercase fw-semibold">Total Sessions</span>
+      <h3 class="fw-bold my-1">{{ total_sessions }}</h3>
+      <small class="text-muted">Unique conversational threads</small>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="card border-0 bg-card p-3 shadow-sm h-100">
+      <span class="text-muted small text-uppercase fw-semibold">Message Exchange</span>
+      <h3 class="fw-bold my-1">{{ total_messages }}</h3>
+      <div class="small text-success">
+        <i class="bi bi-robot me-1"></i> {{ ai_messages }} LLM &bull; {{ fallback_messages }} Fallback
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="card border-0 bg-card p-3 shadow-sm h-100">
+      <span class="text-muted small text-uppercase fw-semibold">Error Rate</span>
+      <h3 class="fw-bold my-1 {% if error_messages %}text-danger{% else %}text-success{% endif %}">{{ error_messages }}</h3>
+      <small class="text-muted">Dispatched error responses</small>
+    </div>
+  </div>
+</div>
+
+<!-- AI Providers Overview Card -->
+<div class="card border-0 bg-card p-4 shadow-sm mb-4">
+  <h6 class="fw-bold mb-3"><i class="bi bi-cpu-fill me-2 text-primary"></i>Configured AI Models & Providers</h6>
+  <div class="row g-3 small">
+    <div class="col-md-4">
+      <div class="p-3 bg-dark rounded border border-secondary border-opacity-25">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <strong>Google Gemini</strong>
+          <span class="badge bg-primary">Built-in</span>
+        </div>
+        <div class="text-muted">Model: <code>{{ gemini_model }}</code></div>
+        <small class="text-success"><i class="bi bi-shield-check me-1"></i>API key managed via server-side .env</small>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="p-3 bg-dark rounded border border-secondary border-opacity-25">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <strong>OpenAI</strong>
+          <span class="badge bg-secondary">Compatible</span>
+        </div>
+        <div class="text-muted">Model: <code>{{ openai_model }}</code></div>
+        <small class="text-success"><i class="bi bi-shield-check me-1"></i>API key managed via server-side .env</small>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="p-3 bg-dark rounded border border-secondary border-opacity-25">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <strong>Anthropic Claude</strong>
+          <span class="badge bg-secondary">Compatible</span>
+        </div>
+        <div class="text-muted">Model: <code>{{ anthropic_model }}</code></div>
+        <small class="text-success"><i class="bi bi-shield-check me-1"></i>API key managed via server-side .env</small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Chat Sessions Table -->
+<div class="card border-0 bg-card shadow-sm overflow-hidden">
+  <div class="card-header bg-transparent border-bottom border-secondary border-opacity-25 py-3">
+    <h6 class="fw-bold mb-0"><i class="bi bi-chat-left-text me-2 text-info"></i>Active Conversations & Privacy Retention</h6>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="text-muted border-bottom border-secondary border-opacity-25">
+        <tr>
+          <th>Session ID</th>
+          <th>User</th>
+          <th>Messages</th>
+          <th>Started</th>
+          <th>Last Active</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in sessions %}
+        <tr>
+          <td><code>{{ s.id|stringformat:".10s" }}...</code></td>
+          <td>
+            {% if s.user %}
+              <a href="{% url 'admin_portal:user_detail' s.user.id %}" class="text-info text-decoration-none fw-semibold">{{ s.user.username }}</a>
+            {% else %}
+              <span class="text-muted">Anonymous Session</span>
+            {% endif %}
+          </td>
+          <td><span class="badge bg-secondary">{{ s.msg_count }}</span></td>
+          <td class="text-muted small">{{ s.started_at|date:"Y-m-d H:i" }}</td>
+          <td class="text-muted small">{{ s.last_active|date:"Y-m-d H:i:s" }}</td>
+          <td class="text-end">
+            <form method="post" action="{% url 'admin_portal:chatbot_delete_session' s.id %}" class="d-inline" onsubmit="return confirm('Delete this conversation history per data retention rules?');">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-sm btn-outline-danger">
+                <i class="bi bi-trash"></i> Delete
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="text-center py-4 text-muted">No chat sessions currently recorded.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

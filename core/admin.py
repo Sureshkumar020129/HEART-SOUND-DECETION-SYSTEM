@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import AuditLog, SiteConfiguration
+from .models import AuditLog, SiteConfiguration, Notification
 
 
 @admin.register(AuditLog)
@@ -20,3 +20,10 @@ class AuditLogAdmin(admin.ModelAdmin):
 @admin.register(SiteConfiguration)
 class SiteConfigurationAdmin(admin.ModelAdmin):
     list_display = ['site_name', 'maintenance_mode', 'allow_registration', 'chatbot_enabled', 'updated_at']
+
+
+@admin.register(Notification)
+class NotificationAdmin(admin.ModelAdmin):
+    list_display = ['user', 'title', 'notification_type', 'is_read', 'created_at']
+    list_filter = ['notification_type', 'is_read', 'created_at']
+    search_fields = ['user__username', 'title', 'message']

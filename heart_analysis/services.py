@@ -86,6 +86,18 @@ def run_analysis(analysis_record):
             disclaimer=pred_result['disclaimer'],
         )
 
+        try:
+            from core.models import Notification
+            Notification.objects.create(
+                user=analysis_record.user,
+                title="Heart Sound Analysis Complete",
+                message=f"Analysis completed successfully. Classification: {pred_result['classification'].capitalize()}.",
+                notification_type="success" if pred_result['classification'] == 'normal' else "warning",
+                link_url=f"/analysis/{analysis_record.id}/"
+            )
+        except Exception:
+            pass
+
         logger.info(
             f"Analysis {analysis_record.id} complete: "
             f"{pred_result['classification']} in {elapsed_ms}ms"
@@ -122,3 +134,15 @@ def run_analysis(analysis_record):
             feature_summary=None,
             disclaimer=DISCLAIMER,
         )
+
+        try:
+            from core.models import Notification
+            Notification.objects.create(
+                user=analysis_record.user,
+                title="Heart Sound Analysis Failed",
+                message=f"Analysis could not be completed: {error_msg[:120]}",
+                notification_type="danger",
+                link_url=f"/analysis/{analysis_record.id}/"
+            )
+        except Exception:
+            pass

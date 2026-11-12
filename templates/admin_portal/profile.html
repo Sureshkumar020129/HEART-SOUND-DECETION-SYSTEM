@@ -1,0 +1,58 @@
+{% extends 'admin_portal/base_admin.html' %}
+
+{% block title %}Administrator Security Profile{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+  <div>
+    <h3 class="fw-bold mb-1">Administrator Profile & Security</h3>
+    <p class="text-muted small mb-0">Update administrative password credentials and view session security.</p>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-6">
+    <div class="card border-0 bg-card p-4 shadow-sm">
+      <h6 class="fw-bold mb-3"><i class="bi bi-key me-2 text-primary"></i>Change Administrator Password</h6>
+      <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="mb-3">
+          <label class="form-label small text-muted">{{ field.label }}</label>
+          {{ field }}
+          {% if field.help_text %}<small class="form-text text-muted d-block">{{ field.help_text }}</small>{% endif %}
+          {% if field.errors %}<div class="text-danger small mt-1">{{ field.errors }}</div>{% endif %}
+        </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary mt-2">
+          <i class="bi bi-shield-lock me-1"></i> Update Password
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="card border-0 bg-card p-4 shadow-sm mb-4">
+      <h6 class="fw-bold mb-3"><i class="bi bi-person-badge me-2 text-info"></i>Account Details</h6>
+      <ul class="list-unstyled small mb-0">
+        <li class="py-2 d-flex justify-content-between border-bottom border-secondary border-opacity-25">
+          <span class="text-muted">Username:</span>
+          <strong>{{ user.username }}</strong>
+        </li>
+        <li class="py-2 d-flex justify-content-between border-bottom border-secondary border-opacity-25">
+          <span class="text-muted">Email:</span>
+          <strong>{{ user.email }}</strong>
+        </li>
+        <li class="py-2 d-flex justify-content-between border-bottom border-secondary border-opacity-25">
+          <span class="text-muted">Superuser Status:</span>
+          <span>{% if user.is_superuser %}<span class="badge bg-danger">Superuser</span>{% else %}Staff{% endif %}</span>
+        </li>
+        <li class="py-2 d-flex justify-content-between">
+          <span class="text-muted">Last Login:</span>
+          <span>{{ user.last_login|date:"Y-m-d H:i:s" }}</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}

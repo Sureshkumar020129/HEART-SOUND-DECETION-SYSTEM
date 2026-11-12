@@ -13,7 +13,14 @@ The platform provides a responsive, animated medical dashboard, interactive audi
 
 ## 2. Key Features
 
-- **User Authentication & Privacy:** Secure signup, login, session timeout, profile management, and granular user-isolated data permissions.
+- **Separated User & Admin Portals:** Distinct User Portal (`/accounts/login/`, `/dashboard/`) and dedicated Administrative Control Panel (`/admin-portal/login/`, `/admin-portal/dashboard/`).
+- **Administrative Control Panel:** Full management of users, heart-sound analyses, symptom assessments, clinical reports, HeartCare AI conversations, model architecture, and security audit logs.
+- **Role-Based Server-Side Protection:** HTTP 403 Forbidden enforcement on all administrative endpoints; zero privilege leakage.
+- **6-Tab User Inspection:** Profile info, analysis history, assessments, clinical reports, chat activity, and audit trails without direct database inspection.
+- **Automated Data Backup & Retention:** Automated timestamped SQLite backups with configurable retention cleanup via `python manage.py backup_data`.
+- **In-App Notification Center:** Real-time event notifications for completed screenings, high-risk assessments, and system alerts.
+- **Dark & Light Mode Engine:** Real-time theme toggling with localStorage persistence across both portals.
+- **User Authentication & Privacy:** Secure signup, login, password change, account deletion request, session timeout, profile management, and granular user-isolated data permissions.
 - **Audio Ingestion:** Supports WAV, FLAC, MP3, OGG, and AIFF files up to 50 MB, plus in-browser Web Audio microphone recording with live visualizer.
 - **Signal Processing Pipeline:** Enforces 1.0s to 300s duration checks, 22.05 kHz resampling, mono downmixing, zero-padding/trimming to 5s windows, and peak normalization.
 - **Acoustic Feature Extraction:** Computes 190 numerical features: 40 MFCCs (mean & std), 12 Chroma features, 7 Spectral Contrast bands, Spectral Centroid and Bandwidth, Zero Crossing Rate, and 64 Mel-energy bands.
@@ -62,13 +69,26 @@ Copy-Item .env.example .env
 python manage.py migrate
 ```
 
-### Step 5: Initialize the Default Administrator Account
+### Step 5: Create or Initialize Administrator Account
+To create a custom administrator securely:
+```powershell
+python manage.py createsuperuser
+```
+Or use the automated initial administrator generator:
 ```powershell
 python manage.py init_admin
 ```
-Default credentials:
-- **Username:** `admin`
-- **Password:** `Admin12345!`
+*(Default generated credentials: username `admin`, password `Admin12345!` — change immediately in production!)*
+
+### Step 6: Automated Database Backup & Retention
+To create timestamped SQLite backups:
+```powershell
+python manage.py backup_data --retention-days 30
+```
+
+### Step 7: Access the Dedicated Portals
+- **Standard User Portal:** `http://127.0.0.1:8000/accounts/login/` &rarr; `http://127.0.0.1:8000/dashboard/`
+- **Admin Control Panel:** `http://127.0.0.1:8000/admin-portal/login/` &rarr; `http://127.0.0.1:8000/admin-portal/dashboard/`
 
 ### Step 6: Verify or Retrain the Machine Learning Model
 The repository includes a trained model in `ml_models/`. To retrain on datasets:

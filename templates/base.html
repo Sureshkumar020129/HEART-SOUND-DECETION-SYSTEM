@@ -25,20 +25,171 @@
   <link href="{% static 'css/main.css' %}" rel="stylesheet">
   {% block extra_css %}{% endblock %}
 </head>
-<body>
+<body class="{% if user.is_authenticated %}has-sidebar{% endif %} {% block body_class %}{% endblock %}">
+  <!-- Early sidebar state restore to prevent layout jump -->
+  <script>
+    (function() {
+      if (document.body.classList.contains('has-sidebar')) {
+        try {
+          if (localStorage.getItem('hs_sidebar_collapsed') === 'true' && window.innerWidth >= 992) {
+            document.body.classList.add('sidebar-collapsed');
+          }
+        } catch(e) {}
+      }
+    })();
+  </script>
+
+{% if user.is_authenticated %}
+  {% include 'includes/sidebar.html' %}
+{% endif %}
 
 <!-- Navigation -->
 <nav class="navbar navbar-expand-lg navbar-dark fixed-top" id="mainNav">
+  {% if user.is_authenticated %}
+  <!-- Authenticated User Top Bar with Sidebar Integration -->
+  <div class="container-fluid px-3 px-lg-4">
+    <div class="d-flex align-items-center gap-2">
+      <!-- Sidebar Toggle (Mobile Drawer / Desktop Collapse) -->
+      <button class="topbar-btn sidebar-toggle-btn"
+              id="sidebarToggle" type="button" title="Toggle Navigation Sidebar"
+              aria-label="Toggle Navigation Sidebar">
+        <i class="bi bi-list fs-4"></i>
+      </button>
+
+      <!-- Brand Logo on Mobile Screen -->
+      <a class="navbar-brand d-flex align-items-center gap-2 d-lg-none ms-1" href="{% url 'core:home' %}">
+        <div class="brand-icon">
+          <svg width="26" height="26" viewBox="0 0 32 32" fill="none">
+            <path d="M16 4 C10 4 5 9 5 15 C5 22 16 29 16 29 C16 29 27 22 27 15 C27 9 22 4 16 4Z"
+                  fill="url(#heartGradMobile)" opacity="0.9"/>
+            <polyline points="6,16 10,10 13,19 16,8 19,22 22,14 26,16"
+                      stroke="#00f5d4" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            <defs>
+              <linearGradient id="heartGradMobile" x1="5" y1="4" x2="27" y2="29">
+                <stop offset="0%" stop-color="#667eea"/>
+                <stop offset="100%" stop-color="#764ba2"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <span class="brand-text fs-6">HeartSound<span class="brand-ai-text">AI</span></span>
+      </a>
+
+      <!-- Page Breadcrumb & Title on Desktop Screen -->
+      <div class="d-none d-lg-flex align-items-center gap-2 ms-2">
+        <a class="topbar-breadcrumb-root text-decoration-none" href="{% url 'core:home' %}">HeartSoundAI</a>
+        <i class="bi bi-chevron-right topbar-breadcrumb-sep"></i>
+        <span class="topbar-breadcrumb-badge">
+          <i class="bi {% block page_icon %}bi-grid-1x2{% endblock %} me-1"></i>{% block page_title %}Dashboard{% endblock %}
+        </span>
+      </div>
+    </div>
+
+    <!-- Right-aligned Topbar Controls -->
+    <div class="d-flex align-items-center gap-3 ms-auto">
+      <!-- Theme Switcher Button (44px, centered, matching theme) -->
+      <button class="topbar-btn theme-toggle-btn"
+              id="themeToggleBtn" type="button" title="Toggle Light/Dark Theme"
+              aria-label="Toggle Theme">
+        <i class="bi bi-sun-fill theme-icon"></i>
+      </button>
+
+      <!-- Notification Bell Dropdown -->
+      <div class="dropdown">
+        <button class="topbar-btn position-relative"
+                id="notificationDropdownBtn" data-bs-toggle="dropdown"
+                aria-expanded="false" title="Notifications"
+                aria-label="View Notifications">
+          <i class="bi bi-bell-fill"></i>
+          {% if unread_notifications_count %}
+          <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger topbar-badge">
+            {{ unread_notifications_count }}
+          </span>
+          {% endif %}
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end shadow-lg topbar-dropdown-menu" style="width: 320px; max-height: 400px; overflow-y: auto;">
+          <li class="dropdown-header d-flex justify-content-between align-items-center py-2 px-3">
+            <span class="fw-bold">Notifications</span>
+            <a href="{% url 'core:notifications' %}" class="small text-decoration-none">View All</a>
+          </li>
+          <li><hr class="dropdown-divider m-0"></li>
+          {% for n in recent_notifications %}
+          <li>
+            <a class="dropdown-item py-2 px-3 text-wrap" href="{% url 'core:notifications' %}">
+              <div class="d-flex align-items-start gap-2">
+                <i class="bi bi-circle-fill text-{% if n.notification_type == 'danger' %}danger{% elif n.notification_type == 'warning' %}warning{% else %}primary{% endif %} mt-1" style="font-size: 0.5rem;"></i>
+                <div>
+                  <div class="fw-semibold small topbar-item-title">{{ n.title }}</div>
+                  <div class="text-muted" style="font-size: 0.75rem;">{{ n.message|truncatechars:70 }}</div>
+                </div>
+              </div>
+            </a>
+          </li>
+          {% empty %}
+          <li class="px-3 py-3 text-center text-muted small">No new notifications.</li>
+          {% endfor %}
+          <li><hr class="dropdown-divider m-0"></li>
+          <li class="text-center py-2">
+            <a href="{% url 'core:notifications' %}" class="small text-cyan text-decoration-none fw-semibold">Open Notification Center &rarr;</a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- User Profile Dropdown Pill -->
+      <div class="dropdown">
+        <button class="topbar-profile-btn"
+                id="userProfileDropdownBtn" data-bs-toggle="dropdown"
+                aria-expanded="false" aria-label="User Account Menu">
+          <div class="avatar-sm flex-shrink-0">
+            {% if user.profile.avatar %}
+            <img src="{{ user.profile.avatar.url }}" alt="{{ user.username }}" class="rounded-circle shadow-sm" width="30" height="30">
+            {% else %}
+            <div class="avatar-placeholder shadow-sm" style="width:30px;height:30px;font-size:0.85rem;font-weight:700;">{{ user.first_name|first|upper|default:user.username|first|upper }}</div>
+            {% endif %}
+          </div>
+          <span class="d-none d-sm-inline topbar-username">{{ user.first_name|default:user.username }}</span>
+          <i class="bi bi-chevron-down topbar-chevron"></i>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end shadow topbar-dropdown-menu">
+          <li class="dropdown-header text-muted small px-3 py-1">{{ user.email }}</li>
+          <li><hr class="dropdown-divider"></li>
+          <li><a class="dropdown-item" href="{% url 'accounts:profile' %}"><i class="bi bi-person me-2"></i>Profile</a></li>
+          <li><a class="dropdown-item" href="{% url 'accounts:change_password' %}"><i class="bi bi-key me-2"></i>Change Password</a></li>
+          <li><a class="dropdown-item" href="{% url 'core:notifications' %}"><i class="bi bi-bell me-2"></i>Notifications</a></li>
+          {% if is_portal_admin %}
+          <li><hr class="dropdown-divider"></li>
+          <li>
+            <a class="dropdown-item text-warning fw-semibold" href="{% url 'admin_portal:dashboard' %}">
+              <i class="bi bi-shield-shaded me-2"></i>Admin Control Panel
+            </a>
+          </li>
+          {% endif %}
+          <li><hr class="dropdown-divider"></li>
+          <li>
+            <form method="post" action="{% url 'accounts:logout' %}">
+              {% csrf_token %}
+              <button type="submit" class="dropdown-item text-danger">
+                <i class="bi bi-box-arrow-right me-2"></i>Logout
+              </button>
+            </form>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  {% else %}
+  <!-- Guest Navigation Bar for Public Pages -->
   <div class="container">
     <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'core:home' %}">
       <div class="brand-icon">
         <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
           <path d="M16 4 C10 4 5 9 5 15 C5 22 16 29 16 29 C16 29 27 22 27 15 C27 9 22 4 16 4Z"
-                fill="url(#heartGrad)" opacity="0.9"/>
+                fill="url(#heartGradGuest)" opacity="0.9"/>
           <polyline points="6,16 10,10 13,19 16,8 19,22 22,14 26,16"
                     stroke="#00f5d4" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
           <defs>
-            <linearGradient id="heartGrad" x1="5" y1="4" x2="27" y2="29">
+            <linearGradient id="heartGradGuest" x1="5" y1="4" x2="27" y2="29">
               <stop offset="0%" stop-color="#667eea"/>
               <stop offset="100%" stop-color="#764ba2"/>
             </linearGradient>
@@ -49,8 +200,7 @@
     </a>
 
     <div class="d-flex align-items-center gap-2 d-lg-none">
-      <!-- Mobile Theme Toggle -->
-      <button class="btn btn-sm btn-outline-secondary rounded-circle theme-toggle-btn" type="button" title="Toggle Theme" style="width:34px;height:34px;padding:0;">
+      <button class="topbar-btn theme-toggle-btn" type="button" title="Toggle Theme" aria-label="Toggle Theme">
         <i class="bi bi-sun-fill theme-icon"></i>
       </button>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
@@ -65,34 +215,6 @@
           <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}"
              href="{% url 'core:home' %}"><i class="bi bi-house-heart me-1"></i>Home</a>
         </li>
-        {% if user.is_authenticated %}
-        <li class="nav-item">
-          <a class="nav-link {% if 'dashboard' in request.path %}active{% endif %}"
-             href="{% url 'dashboard:dashboard' %}"><i class="bi bi-grid me-1"></i>Dashboard</a>
-        </li>
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle {% if 'analysis' in request.path %}active{% endif %}"
-             href="#" data-bs-toggle="dropdown">
-            <i class="bi bi-soundwave me-1"></i>Analysis
-          </a>
-          <ul class="dropdown-menu dropdown-menu-dark">
-            <li><a class="dropdown-item" href="{% url 'heart_analysis:upload' %}">
-              <i class="bi bi-upload me-2"></i>Upload / Record</a></li>
-            <li><a class="dropdown-item" href="{% url 'heart_analysis:history' %}">
-              <i class="bi bi-clock-history me-2"></i>History</a></li>
-          </ul>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link {% if 'assessment' in request.path %}active{% endif %}"
-             href="{% url 'assessments:assessment' %}">
-            <i class="bi bi-clipboard-heart me-1"></i>Assessment</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link {% if 'chatbot' in request.path %}active{% endif %}"
-             href="{% url 'chatbot:chatbot' %}">
-            <i class="bi bi-robot me-1"></i>AI Chat</a>
-        </li>
-        {% endif %}
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
             <i class="bi bi-info-circle me-1"></i>Info
@@ -109,90 +231,11 @@
       </ul>
 
       <ul class="navbar-nav ms-auto align-items-center gap-2">
-        <!-- Desktop Theme Switcher Button -->
         <li class="nav-item d-none d-lg-block">
-          <button class="btn btn-sm btn-outline-secondary rounded-circle theme-toggle-btn" type="button" title="Toggle Theme" style="width:34px;height:34px;padding:0;display:flex;align-items:center;justify-content:center;">
+          <button class="topbar-btn theme-toggle-btn" type="button" title="Toggle Theme" aria-label="Toggle Theme">
             <i class="bi bi-sun-fill theme-icon"></i>
           </button>
         </li>
-
-        {% if user.is_authenticated %}
-        <!-- Notification Bell Dropdown -->
-        <li class="nav-item dropdown">
-          <a class="nav-link position-relative px-2" href="#" data-bs-toggle="dropdown" aria-expanded="false" title="Notifications">
-            <i class="bi bi-bell fs-5"></i>
-            {% if unread_notifications_count %}
-            <span class="position-absolute top-1 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:0.65rem;">
-              {{ unread_notifications_count }}
-            </span>
-            {% endif %}
-          </a>
-          <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow-lg" style="width: 320px; max-height: 400px; overflow-y: auto;">
-            <li class="dropdown-header d-flex justify-content-between align-items-center py-2 px-3">
-              <span class="fw-bold">Notifications</span>
-              <a href="{% url 'core:notifications' %}" class="small text-decoration-none">View All</a>
-            </li>
-            <li><hr class="dropdown-divider m-0"></li>
-            {% for n in recent_notifications %}
-            <li>
-              <a class="dropdown-item py-2 px-3 text-wrap" href="{% url 'core:notifications' %}">
-                <div class="d-flex align-items-start gap-2">
-                  <i class="bi bi-circle-fill text-{% if n.notification_type == 'danger' %}danger{% elif n.notification_type == 'warning' %}warning{% else %}primary{% endif %} mt-1" style="font-size: 0.5rem;"></i>
-                  <div>
-                    <div class="fw-semibold small text-white">{{ n.title }}</div>
-                    <div class="text-muted" style="font-size: 0.75rem;">{{ n.message|truncatechars:70 }}</div>
-                  </div>
-                </div>
-              </a>
-            </li>
-            {% empty %}
-            <li class="px-3 py-3 text-center text-muted small">No new notifications.</li>
-            {% endfor %}
-            <li><hr class="dropdown-divider m-0"></li>
-            <li class="text-center py-2">
-              <a href="{% url 'core:notifications' %}" class="small text-cyan text-decoration-none">Open Notification Center &rarr;</a>
-            </li>
-          </ul>
-        </li>
-
-        <!-- User Profile Dropdown -->
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" data-bs-toggle="dropdown">
-            <div class="avatar-sm">
-              {% if user.profile.avatar %}
-              <img src="{{ user.profile.avatar.url }}" alt="{{ user.username }}" class="rounded-circle" width="28" height="28">
-              {% else %}
-              <div class="avatar-placeholder">{{ user.first_name|first|upper|default:user.username|first|upper }}</div>
-              {% endif %}
-            </div>
-            <span>{{ user.first_name|default:user.username }}</span>
-          </a>
-          <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow">
-            <li class="dropdown-header text-muted small px-3 py-1">{{ user.email }}</li>
-            <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="{% url 'accounts:profile' %}"><i class="bi bi-person me-2"></i>Profile</a></li>
-            <li><a class="dropdown-item" href="{% url 'accounts:change_password' %}"><i class="bi bi-key me-2"></i>Change Password</a></li>
-            <li><a class="dropdown-item" href="{% url 'core:notifications' %}"><i class="bi bi-bell me-2"></i>Notifications</a></li>
-            {% if is_portal_admin %}
-            <li><hr class="dropdown-divider"></li>
-            <li>
-              <a class="dropdown-item text-warning fw-semibold" href="{% url 'admin_portal:dashboard' %}">
-                <i class="bi bi-shield-shaded me-2"></i>Admin Control Panel
-              </a>
-            </li>
-            {% endif %}
-            <li><hr class="dropdown-divider"></li>
-            <li>
-              <form method="post" action="{% url 'accounts:logout' %}">
-                {% csrf_token %}
-                <button type="submit" class="dropdown-item text-danger">
-                  <i class="bi bi-box-arrow-right me-2"></i>Logout
-                </button>
-              </form>
-            </li>
-          </ul>
-        </li>
-        {% else %}
         <li class="nav-item">
           <a class="nav-link" href="{% url 'accounts:login' %}"><i class="bi bi-box-arrow-in-right me-1"></i>Login</a>
         </li>
@@ -201,10 +244,10 @@
             <i class="bi bi-person-plus me-1"></i>Register
           </a>
         </li>
-        {% endif %}
       </ul>
     </div>
   </div>
+  {% endif %}
 </nav>
 
 <!-- Main Content -->

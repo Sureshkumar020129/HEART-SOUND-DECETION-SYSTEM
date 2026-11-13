@@ -1,0 +1,260 @@
+{% load static %}
+<!-- HeartSound AI Left Vertical Navigation Sidebar -->
+<aside class="app-sidebar" id="appSidebar" aria-label="Main Navigation">
+  <!-- Brand Header -->
+  <div class="sidebar-header d-flex align-items-center justify-content-between">
+    <a class="sidebar-brand d-flex align-items-center gap-2 text-decoration-none" href="{% url 'core:home' %}">
+      <div class="brand-icon">
+        <svg width="30" height="30" viewBox="0 0 32 32" fill="none">
+          <path d="M16 4 C10 4 5 9 5 15 C5 22 16 29 16 29 C16 29 27 22 27 15 C27 9 22 4 16 4Z"
+                fill="url(#sidebarHeartGrad)" opacity="0.95"/>
+          <polyline points="6,16 10,10 13,19 16,8 19,22 22,14 26,16"
+                    stroke="#00f5d4" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          <defs>
+            <linearGradient id="sidebarHeartGrad" x1="5" y1="4" x2="27" y2="29">
+              <stop offset="0%" stop-color="#667eea"/>
+              <stop offset="100%" stop-color="#764ba2"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <span class="brand-text fw-bold fs-5">HeartSound<span class="brand-ai-text">AI</span></span>
+    </a>
+    <!-- Mobile Close Button -->
+    <button type="button" class="btn btn-sm text-secondary d-lg-none p-1 sidebar-close-btn" id="sidebarCloseBtn" aria-label="Close sidebar">
+      <i class="bi bi-x-lg fs-5"></i>
+    </button>
+  </div>
+
+  <!-- Navigation Content -->
+  <div class="sidebar-body">
+    <!-- Group: Main Navigation -->
+    <div class="sidebar-group">
+      <div class="sidebar-group-header">MAIN MENU</div>
+      <ul class="sidebar-nav">
+        <!-- 1. Home -->
+        <li class="sidebar-nav-item">
+          <a class="sidebar-link {% if request.resolver_match.url_name == 'home' and request.path == '/' %}active{% endif %}"
+             href="{% url 'core:home' %}" title="Home">
+            <i class="bi bi-house-door-fill sidebar-icon"></i>
+            <span class="sidebar-label">Home</span>
+          </a>
+        </li>
+
+        <!-- 2. Dashboard -->
+        <li class="sidebar-nav-item">
+          <a class="sidebar-link {% if 'dashboard' in request.path %}active{% endif %}"
+             href="{% url 'dashboard:dashboard' %}" title="Dashboard">
+            <i class="bi bi-grid-1x2-fill sidebar-icon"></i>
+            <span class="sidebar-label">Dashboard</span>
+            {% if 'dashboard' in request.path %}
+            <span class="sidebar-active-indicator"></span>
+            {% endif %}
+          </a>
+        </li>
+
+        <!-- 3. Analysis (with sub-items) -->
+        <li class="sidebar-nav-item">
+          <a class="sidebar-link sidebar-dropdown-toggle {% if 'analysis' in request.path %}active{% endif %}"
+             href="#analysisSubmenu" data-bs-toggle="collapse"
+             aria-expanded="{% if 'analysis' in request.path %}true{% else %}false{% endif %}"
+             title="Heart Sound Analysis">
+            <i class="bi bi-soundwave sidebar-icon"></i>
+            <span class="sidebar-label">Analysis</span>
+            <i class="bi bi-chevron-down sidebar-arrow ms-auto"></i>
+          </a>
+          <div class="collapse {% if 'analysis' in request.path %}show{% endif %}" id="analysisSubmenu">
+            <ul class="sidebar-subnav">
+              <li>
+                <a class="sidebar-sublink {% if request.resolver_match.url_name == 'upload' %}active{% endif %}"
+                   href="{% url 'heart_analysis:upload' %}">
+                  <i class="bi bi-cloud-arrow-up-fill sub-icon"></i>
+                  <span>Upload / Record</span>
+                </a>
+              </li>
+              <li>
+                <a class="sidebar-sublink {% if 'history' in request.path and 'analysis' in request.path %}active{% endif %}"
+                   href="{% url 'heart_analysis:history' %}">
+                  <i class="bi bi-clock-history sub-icon"></i>
+                  <span>Analysis History</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </li>
+
+        <!-- 4. Assessment (with sub-items) -->
+        <li class="sidebar-nav-item">
+          <a class="sidebar-link sidebar-dropdown-toggle {% if 'assessment' in request.path %}active{% endif %}"
+             href="#assessmentSubmenu" data-bs-toggle="collapse"
+             aria-expanded="{% if 'assessment' in request.path %}true{% else %}false{% endif %}"
+             title="Symptom Risk Assessment">
+            <i class="bi bi-clipboard2-pulse-fill sidebar-icon"></i>
+            <span class="sidebar-label">Assessment</span>
+            <i class="bi bi-chevron-down sidebar-arrow ms-auto"></i>
+          </a>
+          <div class="collapse {% if 'assessment' in request.path %}show{% endif %}" id="assessmentSubmenu">
+            <ul class="sidebar-subnav">
+              <li>
+                <a class="sidebar-sublink {% if request.resolver_match.url_name == 'assessment' and 'history' not in request.path %}active{% endif %}"
+                   href="{% url 'assessments:assessment' %}">
+                  <i class="bi bi-clipboard-plus-fill sub-icon"></i>
+                  <span>Take Assessment</span>
+                </a>
+              </li>
+              <li>
+                <a class="sidebar-sublink {% if 'history' in request.path and 'assessment' in request.path %}active{% endif %}"
+                   href="{% url 'assessments:history' %}">
+                  <i class="bi bi-calendar2-check-fill sub-icon"></i>
+                  <span>Assessment History</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </li>
+
+        <!-- 5. AI Chat -->
+        <li class="sidebar-nav-item">
+          <a class="sidebar-link {% if 'chatbot' in request.path %}active{% endif %}"
+             href="{% url 'chatbot:chatbot' %}" title="HeartCare AI Assistant">
+            <i class="bi bi-robot sidebar-icon"></i>
+            <span class="sidebar-label">AI Chat</span>
+            <span class="badge bg-cyan text-dark fw-bold ms-auto sidebar-badge">AI</span>
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <div class="sidebar-divider"></div>
+
+    <!-- Group: Info & Resources -->
+    <div class="sidebar-group">
+      <div class="sidebar-group-header">RESOURCES &amp; HELP</div>
+      <ul class="sidebar-nav">
+        <!-- 6. Info (with sub-items) -->
+        <li class="sidebar-nav-item">
+          <a class="sidebar-link sidebar-dropdown-toggle {% if 'about' in request.path or 'how-it-works' in request.path or 'help' in request.path or 'privacy' in request.path or 'terms' in request.path %}active{% endif %}"
+             href="#infoSubmenu" data-bs-toggle="collapse"
+             aria-expanded="{% if 'about' in request.path or 'how-it-works' in request.path or 'help' in request.path or 'privacy' in request.path or 'terms' in request.path %}true{% else %}false{% endif %}"
+             title="Information & Guides">
+            <i class="bi bi-info-circle-fill sidebar-icon"></i>
+            <span class="sidebar-label">Info</span>
+            <i class="bi bi-chevron-down sidebar-arrow ms-auto"></i>
+          </a>
+          <div class="collapse {% if 'about' in request.path or 'how-it-works' in request.path or 'help' in request.path or 'privacy' in request.path or 'terms' in request.path %}show{% endif %}" id="infoSubmenu">
+            <ul class="sidebar-subnav">
+              <li>
+                <a class="sidebar-sublink {% if request.resolver_match.url_name == 'how_it_works' %}active{% endif %}"
+                   href="{% url 'core:how_it_works' %}">
+                  <i class="bi bi-diagram-3-fill sub-icon"></i>
+                  <span>How It Works</span>
+                </a>
+              </li>
+              <li>
+                <a class="sidebar-sublink {% if request.resolver_match.url_name == 'about' %}active{% endif %}"
+                   href="{% url 'core:about' %}">
+                  <i class="bi bi-file-medical-fill sub-icon"></i>
+                  <span>About System</span>
+                </a>
+              </li>
+              <li>
+                <a class="sidebar-sublink {% if request.resolver_match.url_name == 'help' %}active{% endif %}"
+                   href="{% url 'core:help' %}">
+                  <i class="bi bi-question-circle-fill sub-icon"></i>
+                  <span>Help &amp; FAQ</span>
+                </a>
+              </li>
+              <li>
+                <a class="sidebar-sublink {% if request.resolver_match.url_name == 'privacy' %}active{% endif %}"
+                   href="{% url 'core:privacy' %}">
+                  <i class="bi bi-shield-check sub-icon"></i>
+                  <span>Privacy Policy</span>
+                </a>
+              </li>
+              <li>
+                <a class="sidebar-sublink {% if request.resolver_match.url_name == 'terms' %}active{% endif %}"
+                   href="{% url 'core:terms' %}">
+                  <i class="bi bi-file-earmark-text-fill sub-icon"></i>
+                  <span>Terms &amp; Disclaimer</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    {% if user.is_authenticated %}
+    <div class="sidebar-divider"></div>
+
+    <!-- Group: User Account -->
+    <div class="sidebar-group">
+      <div class="sidebar-group-header">MY ACCOUNT</div>
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-item">
+          <a class="sidebar-link {% if 'profile' in request.path %}active{% endif %}"
+             href="{% url 'accounts:profile' %}" title="User Profile">
+            <i class="bi bi-person-fill-gear sidebar-icon"></i>
+            <span class="sidebar-label">Profile Settings</span>
+          </a>
+        </li>
+        <li class="sidebar-nav-item">
+          <a class="sidebar-link {% if 'notifications' in request.path %}active{% endif %}"
+             href="{% url 'core:notifications' %}" title="Notifications">
+            <i class="bi bi-bell-fill sidebar-icon"></i>
+            <span class="sidebar-label">Notifications</span>
+            {% if unread_notifications_count %}
+            <span class="badge bg-danger rounded-pill ms-auto" style="font-size:0.68rem;padding:0.25rem 0.5rem;">
+              {{ unread_notifications_count }}
+            </span>
+            {% endif %}
+          </a>
+        </li>
+        {% if is_portal_admin %}
+        <li class="sidebar-nav-item">
+          <a class="sidebar-link text-warning" href="{% url 'admin_portal:dashboard' %}" title="Administrator Control Panel">
+            <i class="bi bi-shield-fill-check sidebar-icon text-warning"></i>
+            <span class="sidebar-label fw-bold">Admin Panel</span>
+          </a>
+        </li>
+        {% endif %}
+      </ul>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Sidebar Footer User Card -->
+  {% if user.is_authenticated %}
+  <div class="sidebar-footer">
+    <div class="d-flex align-items-center gap-2 mb-2">
+      <div class="avatar-sm flex-shrink-0">
+        {% if user.profile.avatar %}
+        <img src="{{ user.profile.avatar.url }}" alt="{{ user.username }}" class="rounded-circle shadow-sm" width="36" height="36">
+        {% else %}
+        <div class="avatar-placeholder shadow-sm" style="width:36px;height:36px;font-size:0.9rem;font-weight:700;">{{ user.first_name|first|upper|default:user.username|first|upper }}</div>
+        {% endif %}
+      </div>
+      <div class="sidebar-user-info text-truncate">
+        <div class="sidebar-user-name text-truncate">{{ user.first_name|default:user.username }}</div>
+        <div class="sidebar-user-role text-truncate">
+          {% if is_portal_admin %}Administrator{% else %}Active Patient{% endif %}
+        </div>
+      </div>
+    </div>
+    <div class="d-flex align-items-center justify-content-between pt-2 border-top sidebar-status-row">
+      <span class="sidebar-status-indicator d-flex align-items-center gap-1">
+        <span class="status-pulse-dot"></span> System Ready
+      </span>
+      <form method="post" action="{% url 'accounts:logout' %}" class="d-inline m-0">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-sm btn-link p-0 border-0 sidebar-logout-btn" title="Sign out" aria-label="Sign out">
+          <i class="bi bi-box-arrow-right"></i>
+        </button>
+      </form>
+    </div>
+  </div>
+  {% endif %}
+</aside>
+
+<!-- Slide-out Drawer Backdrop for Mobile -->
+<div class="sidebar-backdrop" id="sidebarBackdrop"></div>

@@ -45,7 +45,8 @@ document.addEventListener('DOMContentLoaded', () => {
     updateThemeIcons(saved);
 
     document.querySelectorAll('.theme-toggle-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
         const current = document.documentElement.getAttribute('data-bs-theme') || 'dark';
         const next = current === 'dark' ? 'light' : 'dark';
         document.documentElement.setAttribute('data-bs-theme', next);
@@ -58,11 +59,21 @@ document.addEventListener('DOMContentLoaded', () => {
   function updateThemeIcons(theme) {
     document.querySelectorAll('.theme-icon').forEach(icon => {
       if (theme === 'light') {
-        icon.classList.remove('bi-sun-fill');
-        icon.classList.add('bi-moon-stars-fill');
+        // Current theme is Light -> Clear SUN icon
+        icon.className = 'bi bi-sun-fill theme-icon';
+        const parentBtn = icon.closest('.theme-toggle-btn');
+        if (parentBtn) {
+          parentBtn.setAttribute('title', 'Current Theme: Light Mode (Click to switch to Dark)');
+          parentBtn.setAttribute('aria-label', 'Current Theme: Light Mode (Click to switch to Dark)');
+        }
       } else {
-        icon.classList.remove('bi-moon-stars-fill');
-        icon.classList.add('bi-sun-fill');
+        // Current theme is Dark -> Clear MOON icon
+        icon.className = 'bi bi-moon-stars-fill theme-icon';
+        const parentBtn = icon.closest('.theme-toggle-btn');
+        if (parentBtn) {
+          parentBtn.setAttribute('title', 'Current Theme: Dark Mode (Click to switch to Light)');
+          parentBtn.setAttribute('aria-label', 'Current Theme: Dark Mode (Click to switch to Light)');
+        }
       }
     });
   }
@@ -431,3 +442,127 @@ function initDonutChart(normal, abnormal) {
     },
   });
 }
+
+// ---- HeartSound AI Left Sidebar Controller ----
+function initSidebar() {
+  const sidebar = document.getElementById('appSidebar');
+  const toggleBtn = document.getElementById('sidebarToggle');
+  const closeBtn = document.getElementById('sidebarCloseBtn');
+  const backdrop = document.getElementById('sidebarBackdrop');
+
+  if (!sidebar) return;
+
+  function updateToggleState(isCollapsed) {
+    if (toggleBtn) {
+      toggleBtn.setAttribute('aria-expanded', isCollapsed ? 'false' : 'true');
+      toggleBtn.setAttribute('title', isCollapsed ? 'Expand Navigation Sidebar' : 'Collapse Navigation Sidebar');
+    }
+  }
+
+  function openMobileSidebar() {
+    sidebar.classList.add('show');
+    if (backdrop) backdrop.classList.add('show');
+    document.body.classList.add('sidebar-mobile-open');
+    if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'true');
+  }
+
+  function closeMobileSidebar() {
+    sidebar.classList.remove('show');
+    if (backdrop) backdrop.classList.remove('show');
+    document.body.classList.remove('sidebar-mobile-open');
+    if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'false');
+  }
+
+  function expandDesktopSidebar() {
+    document.body.classList.remove('sidebar-collapsed');
+    localStorage.setItem('hs_sidebar_collapsed', 'false');
+    updateToggleState(false);
+  }
+
+  function collapseDesktopSidebar() {
+    document.body.classList.add('sidebar-collapsed');
+    localStorage.setItem('hs_sidebar_collapsed', 'true');
+    updateToggleState(true);
+  }
+
+  function toggleDesktopSidebar() {
+    if (document.body.classList.contains('sidebar-collapsed')) {
+      expandDesktopSidebar();
+    } else {
+      collapseDesktopSidebar();
+    }
+  }
+
+  // Restore saved collapse state on desktop
+  if (window.innerWidth >= 992) {
+    const saved = localStorage.getItem('hs_sidebar_collapsed');
+    if (saved === 'true') {
+      document.body.classList.add('sidebar-collapsed');
+      updateToggleState(true);
+    } else {
+      updateToggleState(false);
+    }
+  }
+
+  if (toggleBtn) {
+    toggleBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (window.innerWidth < 992) {
+        if (sidebar.classList.contains('show')) {
+          closeMobileSidebar();
+        } else {
+          openMobileSidebar();
+        }
+      } else {
+        toggleDesktopSidebar();
+      }
+    });
+  }
+
+  if (closeBtn) {
+    closeBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      closeMobileSidebar();
+    });
+  }
+
+  if (backdrop) {
+    backdrop.addEventListener('click', closeMobileSidebar);
+  }
+
+  // If a dropdown menu trigger (Analysis, Assessment, Info) is clicked while sidebar is collapsed,
+  // automatically expand the sidebar so the user can see and access the sub-options.
+  sidebar.querySelectorAll('.sidebar-dropdown-toggle').forEach((dropdownToggle) => {
+    dropdownToggle.addEventListener('click', () => {
+      if (document.body.classList.contains('sidebar-collapsed')) {
+        expandDesktopSidebar();
+      }
+    });
+  });
+
+  // Close slide-out drawer upon clicking navigation links on mobile
+  sidebar.querySelectorAll('.sidebar-link:not([data-bs-toggle="collapse"]), .sidebar-sublink').forEach((link) => {
+    link.addEventListener('click', () => {
+      if (window.innerWidth < 992) {
+        closeMobileSidebar();
+      }
+    });
+  });
+
+  // Close drawer on Escape key press
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && sidebar.classList.contains('show')) {
+      closeMobileSidebar();
+    }
+  });
+
+  // Handle window resize cleanly
+  window.addEventListener('resize', () => {
+    if (window.innerWidth >= 992 && sidebar.classList.contains('show')) {
+      closeMobileSidebar();
+    }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', initSidebar);
+

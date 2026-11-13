@@ -113,7 +113,16 @@ def browser_record_upload(request):
 @login_required
 def result_view(request, pk):
     """Display prediction results for a completed analysis."""
-    analysis = get_object_or_404(AnalysisRecord, pk=pk, user=request.user)
+    analysis = AnalysisRecord.objects.filter(pk=pk).first()
+    if analysis is None:
+        messages.info(
+            request,
+            'This analysis is no longer available. Your analysis history is shown instead.',
+        )
+        return redirect('heart_analysis:history')
+    if analysis.user_id != request.user.id:
+        raise Http404
+
     prediction = getattr(analysis, 'prediction', None)
 
     context = {

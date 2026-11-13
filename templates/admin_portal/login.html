@@ -4,123 +4,682 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Administrator Login | HeartSoundAI Control Panel</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="Restricted Administrator Access Gateway — HeartSoundAI Healthcare System">
+  <title>Administrator Security Portal | HeartSoundAI</title>
+
+  <!-- Bootstrap 5 -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <!-- Main Stylesheet -->
   <link href="{% static 'css/main.css' %}" rel="stylesheet">
+
   <style>
+    /* ============================================================
+       HeartSoundAI — Premium Healthcare Administrator Portal
+       ============================================================ */
+    :root {
+      --admin-bg-deep: #060913;
+      --admin-navy-dark: #0a0f24;
+      --admin-card-bg: rgba(13, 20, 39, 0.92);
+      --admin-crimson: #e11d48;
+      --admin-crimson-glow: rgba(225, 29, 72, 0.45);
+      --admin-purple-gradient: linear-gradient(135deg, rgba(124, 58, 237, 0.22) 0%, rgba(225, 29, 72, 0.16) 100%);
+      --admin-cyan: #00d4ff;
+      --admin-text-primary: #f8fafc;
+      --admin-text-muted: #94a3b8;
+      --admin-border-subtle: rgba(255, 255, 255, 0.08);
+      --admin-border-security: rgba(225, 29, 72, 0.32);
+    }
+
     body {
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: radial-gradient(circle at 50% 20%, #151e3f 0%, #0a0f1e 100%);
-      padding: 1.5rem;
+      background-color: var(--admin-bg-deep);
+      background-image: 
+        radial-gradient(circle at 50% 12%, rgba(124, 58, 237, 0.14) 0%, transparent 55%),
+        radial-gradient(circle at 85% 80%, rgba(225, 29, 72, 0.08) 0%, transparent 45%),
+        radial-gradient(circle at 15% 85%, rgba(0, 212, 255, 0.06) 0%, transparent 40%);
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      color: var(--admin-text-primary);
+      padding: 1.5rem 1rem;
+      margin: 0;
+      position: relative;
+      overflow-x: hidden;
     }
-    .admin-login-card {
-      max-width: 440px;
+
+    /* Subtle background ambient pulse */
+    .admin-ambient-glow {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(225, 29, 72, 0.07) 0%, rgba(124, 58, 237, 0.04) 50%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+      filter: blur(40px);
+    }
+
+    /* Main Container & Card */
+    .admin-portal-wrapper {
+      position: relative;
+      z-index: 1;
       width: 100%;
-      background: rgba(13, 21, 41, 0.95);
-      border: 1px solid rgba(255, 0, 127, 0.25);
-      border-radius: 16px;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 30px rgba(255, 0, 127, 0.1);
+      max-width: 460px;
+    }
+
+    .admin-login-card {
+      background: var(--admin-card-bg);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid var(--admin-border-security);
+      border-radius: 22px;
+      box-shadow: 
+        0 24px 60px -12px rgba(0, 0, 0, 0.85),
+        0 0 40px rgba(225, 29, 72, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      overflow: hidden;
+      animation: cardEntrance 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes cardEntrance {
+      from {
+        opacity: 0;
+        transform: translateY(18px) scale(0.985);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    /* Card Header */
+    .admin-card-header {
+      background: var(--admin-purple-gradient);
+      border-bottom: 1px solid var(--admin-border-subtle);
+      padding: 2.25rem 2rem 1.75rem;
+      text-align: center;
+      position: relative;
+    }
+
+    /* Security Shield Icon Badge */
+    .admin-shield-icon-wrap {
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 30%, rgba(225, 29, 72, 0.28) 0%, rgba(13, 20, 39, 0.95) 100%);
+      border: 1.5px solid rgba(225, 29, 72, 0.45);
+      box-shadow: 
+        0 0 24px rgba(225, 29, 72, 0.35),
+        inset 0 0 14px rgba(225, 29, 72, 0.25);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.25rem;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .admin-shield-icon-wrap:hover {
+      transform: scale(1.05);
+      box-shadow: 
+        0 0 32px rgba(225, 29, 72, 0.5),
+        inset 0 0 18px rgba(225, 29, 72, 0.35);
+    }
+
+    .admin-shield-icon {
+      font-size: 2rem;
+      color: #ff3366;
+      filter: drop-shadow(0 2px 6px rgba(225, 29, 72, 0.5));
+    }
+
+    /* Branding Typography */
+    .admin-brand-title {
+      font-size: 1.65rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.5rem;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .admin-brand-ai {
+      color: var(--admin-cyan);
+      text-shadow: 0 0 16px rgba(0, 212, 255, 0.45);
+    }
+
+    /* Security Classification Badge (Replaces the broken red strip) */
+    .admin-security-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      background: rgba(225, 29, 72, 0.12);
+      border: 1px solid rgba(225, 29, 72, 0.38);
+      color: #fda4af;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0.35rem 0.85rem;
+      border-radius: 999px;
+      box-shadow: 0 2px 8px rgba(225, 29, 72, 0.15);
+    }
+
+    .admin-badge-dot {
+      width: 7px;
+      height: 7px;
+      background-color: var(--admin-crimson);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--admin-crimson);
+      display: inline-block;
+      animation: pulseDot 2s infinite ease-in-out;
+    }
+
+    @keyframes pulseDot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    /* Card Body */
+    .admin-card-body {
+      padding: 2rem 2.25rem 2.25rem;
+    }
+
+    /* Security Notice Information Card */
+    .admin-notice-card {
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid rgba(0, 212, 255, 0.2);
+      border-left: 3.5px solid var(--admin-cyan);
+      border-radius: 12px;
+      padding: 0.85rem 1rem;
+      margin-bottom: 1.75rem;
+      backdrop-filter: blur(6px);
+    }
+
+    .admin-notice-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.01em;
+      margin-bottom: 0.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .admin-notice-text {
+      font-size: 0.78rem;
+      line-height: 1.45;
+      color: var(--admin-text-muted);
+      margin: 0;
+    }
+
+    /* Input Field Labels */
+    .admin-form-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #cbd5e1;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    /* Custom Input Groups */
+    .admin-input-group {
+      background: rgba(8, 14, 28, 0.9);
+      border: 1.5px solid rgba(255, 255, 255, 0.12);
+      border-radius: 12px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       overflow: hidden;
     }
-    .admin-card-header {
-      background: linear-gradient(135deg, rgba(255, 0, 127, 0.15) 0%, rgba(121, 40, 202, 0.15) 100%);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      padding: 2.5rem 2rem 1.75rem;
+
+    .admin-input-group:focus-within {
+      border-color: var(--admin-cyan);
+      box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.25), 0 0 16px rgba(0, 212, 255, 0.15);
+      background: rgba(10, 18, 36, 0.95);
+    }
+
+    .admin-input-icon {
+      background: transparent;
+      border: none;
+      color: #64748b;
+      padding: 0.75rem 0.25rem 0.75rem 1.1rem;
+      font-size: 1.15rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.2s ease;
+    }
+
+    .admin-input-group:focus-within .admin-input-icon {
+      color: var(--admin-cyan);
+    }
+
+    .admin-input {
+      background: transparent !important;
+      border: none !important;
+      color: #ffffff !important;
+      font-size: 0.95rem;
+      font-weight: 500;
+      height: 48px;
+      padding: 0.75rem 0.75rem;
+      box-shadow: none !important;
+    }
+
+    .admin-input::placeholder {
+      color: #475569;
+      font-size: 0.9rem;
+    }
+
+    /* Password Visibility Toggle Button */
+    .admin-pwd-toggle-btn {
+      background: transparent;
+      border: none;
+      color: #64748b;
+      padding: 0 1.1rem 0 0.5rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.15rem;
+      transition: color 0.2s ease, transform 0.15s ease;
+      outline: none;
+    }
+
+    .admin-pwd-toggle-btn:hover {
+      color: var(--admin-cyan);
+      transform: scale(1.08);
+    }
+
+    .admin-pwd-toggle-btn:focus-visible {
+      color: var(--admin-cyan);
+      outline: 2px solid var(--admin-cyan);
+      outline-offset: -2px;
+    }
+
+    /* Error Messages */
+    .admin-error-box {
+      background: rgba(225, 29, 72, 0.12);
+      border: 1px solid rgba(225, 29, 72, 0.4);
+      border-left: 3.5px solid var(--admin-crimson);
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      color: #fda4af;
+      font-size: 0.82rem;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      backdrop-filter: blur(4px);
+    }
+
+    .admin-field-error {
+      color: #fb7185;
+      font-size: 0.76rem;
+      font-weight: 500;
+      margin-top: 0.35rem;
+      padding-left: 0.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    /* Submit Button */
+    .admin-submit-btn {
+      width: 100%;
+      height: 52px;
+      background: linear-gradient(135deg, #e11d48 0%, #be123c 100%);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      color: #ffffff;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      box-shadow: 0 4px 20px rgba(225, 29, 72, 0.42);
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .admin-submit-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, transparent 100%);
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .admin-submit-btn:hover {
+      background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
+      box-shadow: 0 6px 28px rgba(225, 29, 72, 0.65);
+      transform: translateY(-1.5px);
+      color: #ffffff;
+    }
+
+    .admin-submit-btn:hover::before {
+      opacity: 1;
+    }
+
+    .admin-submit-btn:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 12px rgba(225, 29, 72, 0.4);
+    }
+
+    .admin-submit-btn:disabled {
+      opacity: 0.75;
+      cursor: not-allowed;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+
+    /* Return to Standard User Login Link */
+    .admin-footer-links {
+      margin-top: 1.5rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid var(--admin-border-subtle);
       text-align: center;
+    }
+
+    .admin-back-link {
+      color: var(--admin-text-muted);
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      transition: all 0.2s ease;
+      padding: 0.35rem 0.65rem;
+      border-radius: 8px;
+    }
+
+    .admin-back-link:hover {
+      color: var(--admin-cyan);
+      background: rgba(0, 212, 255, 0.08);
+      transform: translateX(-3px);
+    }
+
+    /* Bottom Security Footer Details */
+    .admin-security-meta {
+      text-align: center;
+      margin-top: 1.25rem;
+      font-size: 0.72rem;
+      color: #64748b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    /* Accessibility: Reduced Motion Support */
+    @media (prefers-reduced-motion: reduce) {
+      .admin-login-card {
+        animation: none;
+      }
+      .admin-badge-dot {
+        animation: none;
+      }
+      .admin-submit-btn,
+      .admin-shield-icon-wrap,
+      .admin-back-link {
+        transition: none;
+        transform: none !important;
+      }
+    }
+
+    /* Mobile Responsiveness */
+    @media (max-width: 480px) {
+      body {
+        padding: 1rem 0.75rem;
+      }
+      .admin-card-header {
+        padding: 1.75rem 1.25rem 1.25rem;
+      }
+      .admin-card-body {
+        padding: 1.5rem 1.25rem 1.75rem;
+      }
+      .admin-shield-icon-wrap {
+        width: 58px;
+        height: 58px;
+        margin-bottom: 1rem;
+      }
+      .admin-shield-icon {
+        font-size: 1.65rem;
+      }
+      .admin-brand-title {
+        font-size: 1.45rem;
+      }
     }
   </style>
 </head>
 <body>
 
-<div class="admin-login-card">
-  <div class="admin-card-header">
-    <div class="d-inline-flex p-3 rounded-circle bg-danger bg-opacity-10 border border-danger border-opacity-25 mb-3">
-      <i class="bi bi-shield-lock-fill fs-1 text-danger"></i>
-    </div>
-    <h3 class="fw-bold mb-1">HeartSound<span class="text-primary">AI</span></h3>
-    <span class="badge bg-danger bg-opacity-20 text-danger border border-danger border-opacity-25 px-3 py-1 text-uppercase letter-spacing-1">
-      Admin Security Portal
-    </span>
-  </div>
+<!-- Ambient background glow effect -->
+<div class="admin-ambient-glow" aria-hidden="true"></div>
 
-  <div class="p-4 p-md-4">
-    {% if messages %}
-      {% for message in messages %}
-      <div class="alert alert-{{ message.tags|default:'danger' }} alert-dismissible fade show d-flex align-items-center gap-2 mb-3" role="alert">
-        <i class="bi bi-exclamation-triangle-fill"></i>
-        <div class="small">{{ message }}</div>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+<div class="admin-portal-wrapper">
+  <div class="admin-login-card">
+
+    <!-- Header Section -->
+    <div class="admin-card-header">
+      <!-- Shield Security Icon -->
+      <div class="admin-shield-icon-wrap" title="Restricted Security Perimeter">
+        <i class="bi bi-shield-lock-fill admin-shield-icon"></i>
       </div>
-      {% endfor %}
-    {% endif %}
 
-    <div class="alert alert-secondary bg-opacity-10 border-secondary border-opacity-25 text-muted small mb-4">
-      <i class="bi bi-info-circle me-1 text-info"></i>
-      This portal is restricted to authorized healthcare and system administrators. All access attempts are recorded in the security audit trail.
+      <!-- HeartSoundAI Logo & Brand Title -->
+      <h1 class="admin-brand-title">
+        <svg width="28" height="28" viewBox="0 0 32 32" fill="none" class="flex-shrink-0" aria-hidden="true">
+          <path d="M16 4 C10 4 5 9 5 15 C5 22 16 29 16 29 C16 29 27 22 27 15 C27 9 22 4 16 4Z"
+                fill="url(#adminHeartGrad)" opacity="0.95"/>
+          <polyline points="6,16 10,10 13,19 16,8 19,22 22,14 26,16"
+                    stroke="#00d4ff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          <defs>
+            <linearGradient id="adminHeartGrad" x1="5" y1="4" x2="27" y2="29">
+              <stop offset="0%" stop-color="#e11d48"/>
+              <stop offset="100%" stop-color="#7c3aed"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <span>HeartSound<span class="admin-brand-ai">AI</span></span>
+      </h1>
+
+      <!-- Security Classification Badge -->
+      <div class="mt-1">
+        <span class="admin-security-badge">
+          <span class="admin-badge-dot" aria-hidden="true"></span>
+          Admin Security Portal
+        </span>
+      </div>
     </div>
 
-    <form method="post" novalidate>
-      {% csrf_token %}
-      {% if form.non_field_errors %}
-      <div class="alert alert-danger py-2 px-3 small mb-3">
-        {{ form.non_field_errors }}
+    <!-- Body Section -->
+    <div class="admin-card-body">
+
+      <!-- Security Notice Card -->
+      <div class="admin-notice-card" role="region" aria-label="Restricted Access Notice">
+        <div class="d-flex align-items-start gap-2">
+          <i class="bi bi-shield-check text-cyan fs-5 flex-shrink-0 mt-0" aria-hidden="true"></i>
+          <div>
+            <div class="admin-notice-title">Restricted Administrator Access</div>
+            <p class="admin-notice-text">
+              This portal is restricted to authorized healthcare and system administrators.
+              Access attempts may be recorded for security monitoring.
+            </p>
+          </div>
+        </div>
       </div>
+
+      <!-- Error & Status Alerts -->
+      {% if messages %}
+        {% for message in messages %}
+        <div class="admin-error-box" role="alert">
+          <i class="bi bi-shield-exclamation fs-5 flex-shrink-0"></i>
+          <div>{{ message }}</div>
+        </div>
+        {% endfor %}
+      {% elif form.non_field_errors %}
+        {% for error in form.non_field_errors %}
+        <div class="admin-error-box" role="alert">
+          <i class="bi bi-shield-exclamation fs-5 flex-shrink-0"></i>
+          <div>{{ error }}</div>
+        </div>
+        {% endfor %}
       {% endif %}
 
-      <div class="mb-3">
-        <label for="adminUsername" class="form-label small text-muted fw-semibold">ADMINISTRATOR USERNAME</label>
-        <div class="input-group">
-          <span class="input-group-text bg-dark border-secondary border-opacity-25 text-muted"><i class="bi bi-person"></i></span>
-          {{ form.username }}
-        </div>
-        {% if form.username.errors %}<div class="text-danger small mt-1">{{ form.username.errors }}</div>{% endif %}
-      </div>
+      <!-- Login Form -->
+      <form method="post" action="{% url 'admin_portal:login' %}{% if request.GET.next %}?next={{ request.GET.next|urlencode }}{% endif %}" id="adminLoginForm" novalidate autocomplete="off">
+        {% csrf_token %}
 
-      <div class="mb-4">
-        <label for="adminPassword" class="form-label small text-muted fw-semibold">PASSWORD</label>
-        <div class="input-group">
-          <span class="input-group-text bg-dark border-secondary border-opacity-25 text-muted"><i class="bi bi-key"></i></span>
-          {{ form.password }}
-          <button class="btn btn-outline-secondary border-opacity-25" type="button" id="togglePasswordBtn">
-            <i class="bi bi-eye" id="togglePasswordIcon"></i>
+        <!-- Administrator Username -->
+        <div class="mb-3">
+          <label for="adminUsername" class="admin-form-label">
+            <i class="bi bi-person-badge text-cyan" aria-hidden="true"></i>
+            Administrator Username
+          </label>
+          <div class="input-group admin-input-group">
+            <span class="admin-input-icon" id="userIconAddon" aria-hidden="true">
+              <i class="bi bi-person-fill"></i>
+            </span>
+            {{ form.username }}
+          </div>
+          {% if form.username.errors %}
+          <div class="admin-field-error">
+            <i class="bi bi-exclamation-circle-fill"></i>
+            {{ form.username.errors.0 }}
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Administrator Password -->
+        <div class="mb-4">
+          <label for="adminPassword" class="admin-form-label">
+            <i class="bi bi-shield-lock text-cyan" aria-hidden="true"></i>
+            Administrator Password
+          </label>
+          <div class="input-group admin-input-group">
+            <span class="admin-input-icon" id="pwdIconAddon" aria-hidden="true">
+              <i class="bi bi-key-fill"></i>
+            </span>
+            {{ form.password }}
+            <button class="admin-pwd-toggle-btn"
+                    type="button"
+                    id="togglePasswordBtn"
+                    title="Toggle password visibility"
+                    aria-label="Show password as plain text">
+              <i class="bi bi-eye" id="togglePasswordIcon" aria-hidden="true"></i>
+            </button>
+          </div>
+          {% if form.password.errors %}
+          <div class="admin-field-error">
+            <i class="bi bi-exclamation-circle-fill"></i>
+            {{ form.password.errors.0 }}
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Submit Button -->
+        <div class="mb-2">
+          <button type="submit" class="admin-submit-btn" id="submitBtn">
+            <i class="bi bi-shield-lock-fill" id="btnIcon" aria-hidden="true"></i>
+            <span id="btnText">Authenticate &amp; Enter</span>
           </button>
         </div>
-        {% if form.password.errors %}<div class="text-danger small mt-1">{{ form.password.errors }}</div>{% endif %}
-      </div>
 
-      <div class="d-grid mb-3">
-        <button type="submit" class="btn btn-danger btn-lg fw-semibold shadow-sm">
-          <i class="bi bi-box-arrow-in-right me-2"></i>Authenticate & Enter
-        </button>
-      </div>
+        <!-- Return to Standard User Login -->
+        <div class="admin-footer-links">
+          <a href="{% url 'accounts:login' %}" class="admin-back-link">
+            <i class="bi bi-arrow-left" aria-hidden="true"></i>
+            Return to Standard User Login
+          </a>
+        </div>
+      </form>
 
-      <div class="text-center mt-3 pt-3 border-top border-secondary border-opacity-25">
-        <a href="{% url 'accounts:login' %}" class="text-muted small text-decoration-none">
-          <i class="bi bi-arrow-left me-1"></i>Return to Standard User Login
-        </a>
-      </div>
-    </form>
+    </div>
+  </div>
+
+  <!-- Security Metadata Notice -->
+  <div class="admin-security-meta" aria-hidden="true">
+    <i class="bi bi-lock-fill text-secondary"></i>
+    <span>TLS 256-Bit Encrypted &middot; Audit Trail Active</span>
   </div>
 </div>
 
+<!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-  // Show / Hide Password Toggle
-  const toggleBtn = document.getElementById('togglePasswordBtn');
-  const passwordInput = document.getElementById('adminPassword');
-  const toggleIcon = document.getElementById('togglePasswordIcon');
 
-  if (toggleBtn && passwordInput && toggleIcon) {
-    toggleBtn.addEventListener('click', () => {
-      const isPassword = passwordInput.type === 'password';
-      passwordInput.type = isPassword ? 'text' : 'password';
-      toggleIcon.className = isPassword ? 'bi bi-eye-slash' : 'bi bi-eye';
-    });
-  }
+<script>
+  (function() {
+    'use strict';
+
+    // 1. Password Visibility Toggle
+    const toggleBtn = document.getElementById('togglePasswordBtn');
+    const passwordInput = document.getElementById('adminPassword');
+    const toggleIcon = document.getElementById('togglePasswordIcon');
+
+    if (toggleBtn && passwordInput && toggleIcon) {
+      toggleBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        const isPassword = passwordInput.type === 'password';
+        passwordInput.type = isPassword ? 'text' : 'password';
+        
+        toggleIcon.className = isPassword ? 'bi bi-eye-slash' : 'bi bi-eye';
+        toggleBtn.setAttribute('title', isPassword ? 'Hide password' : 'Show password');
+        toggleBtn.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password as plain text');
+        
+        // Keep focus on input for seamless typing
+        passwordInput.focus();
+      });
+    }
+
+    // 2. Prevent Double Submissions & Display Loading Indicator
+    const form = document.getElementById('adminLoginForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const btnIcon = document.getElementById('btnIcon');
+    const btnText = document.getElementById('btnText');
+
+    if (form && submitBtn) {
+      form.addEventListener('submit', function(e) {
+        // Simple front-end validation check
+        const usernameVal = (document.getElementById('adminUsername')?.value || '').trim();
+        const passwordVal = (passwordInput?.value || '').trim();
+
+        if (!usernameVal || !passwordVal) {
+          // Allow Django backend to handle validation natively
+          return;
+        }
+
+        // Show loading state and prevent duplicate clicks
+        submitBtn.disabled = true;
+        if (btnIcon) btnIcon.className = 'spinner-border spinner-border-sm';
+        if (btnText) btnText.textContent = 'Verifying Credentials...';
+
+        // Re-enable after 8s fallback in case of connection drop
+        setTimeout(function() {
+          submitBtn.disabled = false;
+          if (btnIcon) btnIcon.className = 'bi bi-shield-lock-fill';
+          if (btnText) btnText.textContent = 'Authenticate & Enter';
+        }, 8000);
+      });
+    }
+  })();
 </script>
+
 </body>
 </html>

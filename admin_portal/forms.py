@@ -14,14 +14,18 @@ class AdminLoginForm(AuthenticationForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['username'].widget.attrs.update({
-            'class': 'form-control form-control-lg',
-            'placeholder': 'Administrator Username',
-            'id': 'adminUsername'
+            'class': 'form-control admin-input',
+            'placeholder': 'Enter admin username',
+            'id': 'adminUsername',
+            'autocomplete': 'username',
+            'required': 'required',
         })
         self.fields['password'].widget.attrs.update({
-            'class': 'form-control form-control-lg',
-            'placeholder': 'Administrator Password',
-            'id': 'adminPassword'
+            'class': 'form-control admin-input',
+            'placeholder': 'Enter admin password',
+            'id': 'adminPassword',
+            'autocomplete': 'current-password',
+            'required': 'required',
         })
 
     def confirm_login_allowed(self, user):
